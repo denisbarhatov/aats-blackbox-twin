@@ -1,0 +1,17 @@
+<section id="table" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:36px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;איך זה עובד · 2 · איך הוא יודע מה לשלוח&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;הלומד ממלא טבלה של ניסויים&#x2069;</h2>
+<p style="font-size:30px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;מכל נקודה שהגיע אליה הוא שולח 4 בדיקות. שורה עם תשובות שעוד לא ראה = מצב חדש.&#x2069;</p>
+</div>
+<table style="font-family:Heebo, Arial, sans-serif;font-size:30px;color:#1B2230">
+<tr><th style="width:18%;text-align:right">&#x2067;מסקנה&#x2069;</th><th style="width:13%;text-align:center">PING</th><th style="width:16%;text-align:center">STATUS</th><th style="width:12%;text-align:center">OFF</th><th style="width:12%;text-align:center">ON</th><th style="width:29%;text-align:right">&#x2067;הגעתי לנקודה ע״י&#x2069;</th></tr>
+<tr><td style="text-align:right;color:#2F5FCC">&#x2067;מצב s0&#x2069;</td><td style="text-align:center">PONG</td><td style="text-align:center">LED_OFF</td><td style="text-align:center">OK</td><td style="text-align:center">OK</td><td style="text-align:right">&#x2067;RESET בלבד&#x2069;</td></tr>
+<tr style="background:#E6EDFB"><td style="text-align:right;color:#2F5FCC">&#x2067;חדש: s1&#x2069;</td><td style="text-align:center">PONG</td><td style="text-align:center">LED_ON</td><td style="text-align:center">OK</td><td style="text-align:center">WARN</td><td style="text-align:right">ON</td></tr>
+<tr><td style="text-align:right;color:#4A5361">&#x2067;כמו s0&#x2069;</td><td style="text-align:center">PONG</td><td style="text-align:center">LED_OFF</td><td style="text-align:center">OK</td><td style="text-align:center">OK</td><td style="text-align:right">OFF</td></tr>
+<tr style="background:#E6EDFB"><td style="text-align:right;color:#2F5FCC">&#x2067;חדש: s2&#x2069;</td><td style="text-align:center">PONG</td><td style="text-align:center">LED_ON</td><td style="text-align:center">OK</td><td style="text-align:center">ERR</td><td style="text-align:right">ON ON</td></tr>
+<tr style="background:#E6EDFB"><td style="text-align:right;color:#2F5FCC">&#x2067;חדש: s3&#x2069;</td><td style="text-align:center">ERR</td><td style="text-align:center">FAULT</td><td style="text-align:center">ERR</td><td style="text-align:center">ERR</td><td style="text-align:right">ON ON ON</td></tr>
+</table>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;כל משבצת היא ניסוי אמיתי. למשל, השורה ON ON בעמודה STATUS: שולחים RESET, ON, ON, STATUS ורושמים את התשובה האחרונה, LED_ON.&#x2069;</p>
+<aside>הלומד יודע מראש רק כתובת, רשימת פקודות מותרות ופקודת RESET. הוא לא שולח דברים "נכונים", הוא שולח ניסויים ולומד מהתשובות. הטבלה הזאת היא בדיוק מה שקרה בהרצה של ה-POC. שימו לב שהשורה OFF זהה ל-s0, ולכן היא לא מצב חדש.</aside>
+</section>

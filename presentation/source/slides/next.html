@@ -1,0 +1,24 @@
+<section id="next" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;גבולות והמשך&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;מה עוד לא הוכחנו, ומה השלב הבא&#x2069;</h2>
+</div>
+<div style="display:flex;flex-direction:row-reverse;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:18px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:40px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:40px;font-weight:600;color:#1B2230;text-align:right">&#x2067;גבולות ה-POC&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;· מכשיר מדומה ופרוטוקול טקסט פשוט מעל TCP&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;· המכשיר צריך פקודת RESET&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;· מצב שלא משפיע על התשובות לא ניתן לגילוי מבחוץ&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;· 300 בדיקות הן ראיה חזקה, לא הוכחה מתמטית&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:18px;background:#FFFDF8;border:2px solid #2F5FCC;border-radius:20px;padding:40px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:40px;font-weight:600;color:#2F5FCC;text-align:right">&#x2067;השלב הבא: AWS&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#1B2230;text-align:right">&#x2067;· ESP32 אמיתי, מחובר ל-AWS IoT Core דרך MQTT&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#1B2230;text-align:right">&#x2067;· הלומד והתאום רצים ב-ECS Fargate&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#1B2230;text-align:right">&#x2067;· model.json ותוצאות נשמרים ב-S3&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#1B2230;text-align:right">&#x2067;· Step Functions מריץ את כל השלבים, CloudWatch ללוגים&#x2069;</p>
+</div>
+</div>
+<p style="font-size:30px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;הלמידה עצמה לא משתנה: רק הדרך שבה ההודעות מגיעות למכשיר.&#x2069;</p>
+<aside>חשוב להיות כנים לגבי הגבולות: זה מכשיר מדומה, והבדיקה האקראית לא מוכיחה מתמטית שהמודל מושלם. מצד שני, הליבה הוכחה. השלב הבא הוא להעביר את זה ל-AWS: ESP32 שמתחבר ל-IoT Core, ה-Learner וה-Twin ב-Fargate, המודל ב-S3, ו-Step Functions שמריץ הכל בלחיצה.</aside>
+</section>

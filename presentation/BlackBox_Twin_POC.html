@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BlackBox Twin — POC</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Heebo:wght@300..800&family=JetBrains+Mono:wght@400..700&display=swap">
+<style>
+@page { size: 1920px 1080px; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #2a2f3a; }
+h1, h2, h3, p { margin: 0; }
+hr { margin: 0; border: none; width: 100%; }
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 0.35em 0.6em; border-bottom: 1px solid rgba(128,128,128,.35); }
+th { font-weight: 600; }
+section { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+.frame { width: 1920px; height: 1080px; margin: 0 auto 24px; transform-origin: top left; }
+@media screen {
+  body { padding: 24px 0; }
+  .frame { box-shadow: 0 8px 30px rgba(0,0,0,.4); }
+}
+@media print {
+  html, body { background: none; }
+  .frame { margin: 0; break-after: page; transform: none !important; height: 1080px !important; }
+}
+</style>
+</head>
+<body>
+<div class="frame"><section id="cover" data-transition="fade" style="background:#121826;color:#EEF0F4;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:32px">
+<p style="font-size:28px;font-weight:700;color:#8FB0FF;text-align:right;letter-spacing:1px">&#x2067;הוכחת היתכנות · פרויקט גמר בקורס AWS&#x2069;</p>
+<h1 style="font-family:Rubik, Arial, sans-serif;font-size:160px;font-weight:700;line-height:1.05;color:#EEF0F4;text-align:right">BlackBox Twin</h1>
+<p style="font-size:48px;line-height:1.35;color:#A9B4C6;text-align:right;width:1400px">&#x2067;לומדים מכשיר מבחוץ, בונים לו תאום, ומוכיחים שהוא מדויק.&#x2069;</p>
+<div style="position:absolute;left:128px;bottom:128px;display:flex;flex-direction:row;align-items:center;gap:16px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;color:#EEF0F4;background:#1F2A3F;padding:12px 28px;border-radius:999px">OFF</p>
+<p style="font-size:32px;color:#6B7A95">→</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;color:#EEF0F4;background:#1F2A3F;padding:12px 28px;border-radius:999px">ON</p>
+<p style="font-size:32px;color:#6B7A95">→</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;color:#EEF0F4;background:#1F2A3F;padding:12px 28px;border-radius:999px">WARN</p>
+<p style="font-size:32px;color:#6B7A95">→</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;color:#FFE3D6;background:#5A2A22;padding:12px 28px;border-radius:999px">FAULT</p>
+</div>
+
+</section></div>
+<div class="frame"><section id="problem" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;הבעיה&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;יש מכשיר. אין קוד, אין תיעוד, ואסור לגעת בו.&#x2069;</h2>
+</div>
+<div style="display:flex;flex-direction:row-reverse;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:40px">
+<svg style="flex:none;align-self:flex-end;width:56px;height:56px" viewBox="0 0 24 24" fill="none" stroke="#2F5FCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:40px;font-weight:600;line-height:1.2;color:#1B2230;text-align:right">&#x2067;אין קוד מקור&#x2069;</h3>
+<p style="font-size:30px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;לא יודעים מה קורה בתוך המכשיר. רואים רק מה הוא עונה.&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:40px">
+<svg style="flex:none;align-self:flex-end;width:56px;height:56px" viewBox="0 0 24 24" fill="none" stroke="#2F5FCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:40px;font-weight:600;line-height:1.2;color:#1B2230;text-align:right">&#x2067;יקר ונמצא בייצור&#x2069;</h3>
+<p style="font-size:30px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;אי אפשר לקחת אותו למעבדה בכל פעם שבודקים תוכנה.&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:40px">
+<svg style="flex:none;align-self:flex-end;width:56px;height:56px" viewBox="0 0 24 24" fill="none" stroke="#2F5FCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20L12 3z"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="12" y1="17.5" x2="12" y2="17.6"/></svg>
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:40px;font-weight:600;line-height:1.2;color:#1B2230;text-align:right">&#x2067;אי אפשר לשבור אותו&#x2069;</h3>
+<p style="font-size:30px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;אין דרך בטוחה לדמות תקלות ולראות איך התוכנה מגיבה.&#x2069;</p>
+</div>
+</div>
+<p style="font-size:40px;font-weight:600;line-height:1.35;color:#2F5FCC;text-align:right">&#x2067;הפתרון: תאום דיגיטלי שמתנהג כמו המכשיר, ושאפשר לבדוק מולו בלי לגעת במכשיר.&#x2069;</p>
+
+</section></div>
+<div class="frame"><section id="idea" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;הרעיון&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;ארבעה צעדים, מהמכשיר ועד תאום מוכח&#x2069;</h2>
+</div>
+<div style="display:flex;flex-direction:row-reverse;align-items:center;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:36px">
+<p style="font-family:Rubik, Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#2F5FCC;text-align:right">1</p>
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:40px;font-weight:600;line-height:1.2;color:#1B2230;text-align:right">&#x2067;שואלים&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;שולחים למכשיר פקודות ורושמים מה הוא עונה.&#x2069;</p>
+</div>
+<svg style="flex:none;width:56px;height:28px" viewBox="0 0 100 50" preserveAspectRatio="none"><polygon points="0,25 40,0 40,14 100,14 100,36 40,36 40,50" fill="#B8C4D9"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:36px">
+<p style="font-family:Rubik, Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#2F5FCC;text-align:right">2</p>
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:40px;font-weight:600;line-height:1.2;color:#1B2230;text-align:right">&#x2067;לומדים&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;מסיקים מהתשובות את המצבים ואת המעברים.&#x2069;</p>
+</div>
+<svg style="flex:none;width:56px;height:28px" viewBox="0 0 100 50" preserveAspectRatio="none"><polygon points="0,25 40,0 40,14 100,14 100,36 40,36 40,50" fill="#B8C4D9"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:36px">
+<p style="font-family:Rubik, Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#2F5FCC;text-align:right">3</p>
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:40px;font-weight:600;line-height:1.2;color:#1B2230;text-align:right">&#x2067;בונים תאום&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;תוכנה שעונה לפי המודל שנלמד.&#x2069;</p>
+</div>
+<svg style="flex:none;width:56px;height:28px" viewBox="0 0 100 50" preserveAspectRatio="none"><polygon points="0,25 40,0 40,14 100,14 100,36 40,36 40,50" fill="#B8C4D9"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFDF8;border:2px solid #2F5FCC;border-radius:20px;padding:36px">
+<p style="font-family:Rubik, Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#2F5FCC;text-align:right">4</p>
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:40px;font-weight:600;line-height:1.2;color:#1B2230;text-align:right">&#x2067;מוכיחים&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;משווים תאום מול מכשיר על רצפים חדשים.&#x2069;</p>
+</div>
+</div>
+<p style="font-size:32px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;שלב 4 הוא מה שמבדיל אותנו מ״סתם הקלטה״: אנחנו מודדים כמה התאום באמת מדויק.&#x2069;</p>
+
+</section></div>
+<div class="frame"><section id="device" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;המכשיר&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;נורה עם סוד: ארבעה מצבים נסתרים&#x2069;</h2>
+<p style="font-size:30px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;סימולטור של ESP32 עם נורת LED. ללומד אין גישה לתרשים הזה. הוא כאן רק כדי שנוכל לבדוק אם הלמידה הצליחה.&#x2069;</p>
+</div>
+<div style="display:flex;flex-direction:row-reverse;align-items:center;justify-content:center;gap:16px">
+<div style="width:250px;display:flex;flex-direction:column;align-items:center;gap:8px;background:#FFFDF8;border:3px solid #8A94A6;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:40px;font-weight:700;color:#1B2230">OFF</p>
+<p style="font-size:24px;color:#4A5361">STATUS</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;color:#1B2230">LED_OFF</p>
+</div>
+<div style="width:170px;display:flex;flex-direction:column;align-items:center;gap:8px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#1B2230">ON / OK</p>
+<svg style="flex:none;width:120px;height:44px" viewBox="0 0 100 50" preserveAspectRatio="none"><polygon points="0,25 40,0 40,14 100,14 100,36 40,36 40,50" fill="#2F5FCC"/></svg>
+</div>
+<div style="width:250px;display:flex;flex-direction:column;align-items:center;gap:8px;background:#FFFDF8;border:3px solid #2F5FCC;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:40px;font-weight:700;color:#1B2230">ON</p>
+<p style="font-size:24px;color:#4A5361">STATUS</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#A35A12">LED_ON</p>
+</div>
+<div style="width:170px;display:flex;flex-direction:column;align-items:center;gap:8px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#1B2230">ON / WARN</p>
+<svg style="flex:none;width:120px;height:44px" viewBox="0 0 100 50" preserveAspectRatio="none"><polygon points="0,25 40,0 40,14 100,14 100,36 40,36 40,50" fill="#2F5FCC"/></svg>
+</div>
+<div style="width:250px;display:flex;flex-direction:column;align-items:center;gap:8px;background:#FFFDF8;border:3px solid #D9822B;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:40px;font-weight:700;color:#1B2230">WARN</p>
+<p style="font-size:24px;color:#4A5361">STATUS</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#A35A12">LED_ON</p>
+</div>
+<div style="width:170px;display:flex;flex-direction:column;align-items:center;gap:8px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#1B2230">ON / ERR</p>
+<svg style="flex:none;width:120px;height:44px" viewBox="0 0 100 50" preserveAspectRatio="none"><polygon points="0,25 40,0 40,14 100,14 100,36 40,36 40,50" fill="#2F5FCC"/></svg>
+</div>
+<div style="width:250px;display:flex;flex-direction:column;align-items:center;gap:8px;background:#FBEBEB;border:3px solid #B4372F;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:40px;font-weight:700;color:#1B2230">FAULT</p>
+<p style="font-size:24px;color:#4A5361">STATUS</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;color:#1B2230">FAULT</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:row-reverse;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FCEFE0;border:2px solid #D9822B;border-radius:20px;padding:32px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:34px;font-weight:600;color:#1B2230;text-align:right">&#x2067;המלכודת&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#1B2230;text-align:right">&#x2067;ON ו-WARN עונים אותו דבר ל-STATUS: LED_ON. רק עוד ON מגלה שהם שונים.&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:32px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:34px;font-weight:600;color:#1B2230;text-align:right">&#x2067;חזרה להתחלה&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;OFF מחזיר ל-OFF מכל מצב חוץ מ-FAULT. מ-FAULT יוצאים רק עם RESET.&#x2069;</p>
+</div>
+</div>
+
+</section></div>
+<div class="frame"><section id="packets" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;איך זה עובד · 1&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;איך נשלחת פקודה ואיך רואים מה המכשיר ענה&#x2069;</h2>
+</div>
+<div style="display:flex;flex-direction:row-reverse;gap:64px;align-items:center">
+<div style="flex:1;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:6px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:38px;font-weight:600;color:#1B2230;text-align:right">&#x2067;חיבור אחד&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;הלומד פותח חיבור TCP אחד, והוא נשאר פתוח לאורך כל הלמידה.&#x2069;</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:38px;font-weight:600;color:#1B2230;text-align:right">&#x2067;פקודה = שורת טקסט&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;למשל ON ואחריו ירידת שורה. כמה בתים בלבד.&#x2069;</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:38px;font-weight:600;color:#1B2230;text-align:right">&#x2067;תשובה = שורה שחוזרת&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;הלומד מחכה לשורה. אם אין תשובה תוך 2 שניות, זו שגיאה.&#x2069;</p>
+</div>
+</div>
+<div style="width:760px;display:flex;flex-direction:column;gap:18px;background:#121826;border-radius:24px;padding:44px 48px">
+<div style="display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;font-weight:700;color:#8FB0FF">Learner</p>
+<p style="font-size:24px;font-weight:700;color:#A9B4C6">Device</p>
+</div>
+<hr style="border-top:1px solid #2E3A52">
+<div style="display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-family:'JetBrains Mono', monospace;font-size:30px;color:#8FB0FF">→ RESET</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:30px;color:#EEF0F4">RESET_OK ←</p>
+</div>
+<div style="display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-family:'JetBrains Mono', monospace;font-size:30px;color:#8FB0FF">→ ON</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:30px;color:#EEF0F4">OK ←</p>
+</div>
+<div style="display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-family:'JetBrains Mono', monospace;font-size:30px;color:#8FB0FF">→ ON</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:30px;color:#F0A352">WARN ←</p>
+</div>
+<div style="display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-family:'JetBrains Mono', monospace;font-size:30px;color:#8FB0FF">→ STATUS</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:30px;color:#EEF0F4">LED_ON ←</p>
+</div>
+<hr style="border-top:1px solid #2E3A52">
+<p style="font-size:26px;line-height:1.4;color:#A9B4C6;text-align:right">&#x2067;ניסוי אחד = RESET, רצף פקודות, ורישום התשובות. ה-RESET מבטיח שכל ניסוי מתחיל מאותה נקודה.&#x2069;</p>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;מול ESP32 אמיתי זה אותו רעיון בדיוק, רק עם הודעות JSON מעל MQTT דרך AWS IoT Core.&#x2069;</p>
+
+</section></div>
+<div class="frame"><section id="table" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:36px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;איך זה עובד · 2 · איך הוא יודע מה לשלוח&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;הלומד ממלא טבלה של ניסויים&#x2069;</h2>
+<p style="font-size:30px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;מכל נקודה שהגיע אליה הוא שולח 4 בדיקות. שורה עם תשובות שעוד לא ראה = מצב חדש.&#x2069;</p>
+</div>
+<table style="font-family:Heebo, Arial, sans-serif;font-size:30px;color:#1B2230">
+<tr><th style="width:18%;text-align:right">&#x2067;מסקנה&#x2069;</th><th style="width:13%;text-align:center">PING</th><th style="width:16%;text-align:center">STATUS</th><th style="width:12%;text-align:center">OFF</th><th style="width:12%;text-align:center">ON</th><th style="width:29%;text-align:right">&#x2067;הגעתי לנקודה ע״י&#x2069;</th></tr>
+<tr><td style="text-align:right;color:#2F5FCC">&#x2067;מצב s0&#x2069;</td><td style="text-align:center">PONG</td><td style="text-align:center">LED_OFF</td><td style="text-align:center">OK</td><td style="text-align:center">OK</td><td style="text-align:right">&#x2067;RESET בלבד&#x2069;</td></tr>
+<tr style="background:#E6EDFB"><td style="text-align:right;color:#2F5FCC">&#x2067;חדש: s1&#x2069;</td><td style="text-align:center">PONG</td><td style="text-align:center">LED_ON</td><td style="text-align:center">OK</td><td style="text-align:center">WARN</td><td style="text-align:right">ON</td></tr>
+<tr><td style="text-align:right;color:#4A5361">&#x2067;כמו s0&#x2069;</td><td style="text-align:center">PONG</td><td style="text-align:center">LED_OFF</td><td style="text-align:center">OK</td><td style="text-align:center">OK</td><td style="text-align:right">OFF</td></tr>
+<tr style="background:#E6EDFB"><td style="text-align:right;color:#2F5FCC">&#x2067;חדש: s2&#x2069;</td><td style="text-align:center">PONG</td><td style="text-align:center">LED_ON</td><td style="text-align:center">OK</td><td style="text-align:center">ERR</td><td style="text-align:right">ON ON</td></tr>
+<tr style="background:#E6EDFB"><td style="text-align:right;color:#2F5FCC">&#x2067;חדש: s3&#x2069;</td><td style="text-align:center">ERR</td><td style="text-align:center">FAULT</td><td style="text-align:center">ERR</td><td style="text-align:center">ERR</td><td style="text-align:right">ON ON ON</td></tr>
+</table>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;כל משבצת היא ניסוי אמיתי. למשל, השורה ON ON בעמודה STATUS: שולחים RESET, ON, ON, STATUS ורושמים את התשובה האחרונה, LED_ON.&#x2069;</p>
+
+</section></div>
+<div class="frame"><section id="insight" data-transition="fade" style="background:#2F5FCC;color:#F5F3EE;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:40px">
+<p style="font-size:28px;font-weight:700;color:#F5F3EE;text-align:right;letter-spacing:1px">&#x2067;הרעיון המרכזי&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:96px;font-weight:700;line-height:1.1;color:#F5F3EE;text-align:right">&#x2067;מצב = איך המכשיר מגיב לבדיקות.&#x2069;</h2>
+<p style="font-size:44px;line-height:1.4;color:#F5F3EE;text-align:right;width:1500px">&#x2067;s1 ו-s2 עונים שניהם LED_ON ל-STATUS. אבל ל-ON אחד עונה WARN והשני ERR.&#x2069;</p>
+<p style="font-size:44px;font-weight:700;line-height:1.4;color:#F5F3EE;text-align:right;width:1500px">&#x2067;תשובה שונה לאותה בדיקה = שני מצבים שונים.&#x2069;</p>
+
+</section></div>
+<div class="frame"><section id="loop" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;איך זה עובד · 3&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;הלולאה: טבלה, השערה, בדיקה&#x2069;</h2>
+</div>
+<div style="display:flex;flex-direction:row-reverse;align-items:center;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:36px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:38px;font-weight:600;color:#1B2230;text-align:right">&#x2067;1 · ממלאים טבלה&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;4 בדיקות מכל מצב שנמצא, עד שכל צעד מוביל למצב מוכר.&#x2069;</p>
+</div>
+<svg style="flex:none;width:56px;height:28px" viewBox="0 0 100 50" preserveAspectRatio="none"><polygon points="0,25 40,0 40,14 100,14 100,36 40,36 40,50" fill="#B8C4D9"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:36px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:38px;font-weight:600;color:#1B2230;text-align:right">&#x2067;2 · בונים השערה&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;לכל מצב ופקודה: מה התשובה, ולאיזה מצב עוברים.&#x2069;</p>
+</div>
+<svg style="flex:none;width:56px;height:28px" viewBox="0 0 100 50" preserveAspectRatio="none"><polygon points="0,25 40,0 40,14 100,14 100,36 40,36 40,50" fill="#B8C4D9"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:36px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:38px;font-weight:600;color:#1B2230;text-align:right">&#x2067;3 · בודקים&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;200 רצפים אקראיים למכשיר. ההשערה צפתה את כל התשובות?&#x2069;</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:row-reverse;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FCEFE0;border:2px solid #D9822B;border-radius:20px;padding:32px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:34px;font-weight:600;color:#1B2230;text-align:right">&#x2067;נמצא הבדל&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#1B2230;text-align:right">&#x2067;הרצף שגילה אותו הופך לבדיקה חדשה בטבלה, וחוזרים לשלב 1.&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#E5F4E4;border:2px solid #1F7A4D;border-radius:20px;padding:32px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:34px;font-weight:600;color:#1B2230;text-align:right">&#x2067;אין הבדל&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#1B2230;text-align:right">&#x2067;המודל נשמר ל-model.json, ומזה נבנה התאום.&#x2069;</p>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;אצלנו: סיבוב אחד, 203 ניסויים, 1,524 פקודות, פחות משנייה. רצף שכבר נשלח לא נשלח שוב.&#x2069;</p>
+
+</section></div>
+<div class="frame"><section id="notai" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:36px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;שאלה שתישאל&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;זה AI? לא. זו למידה מדויקת.&#x2069;</h2>
+</div>
+<table style="font-family:Heebo, Arial, sans-serif;font-size:30px;color:#1B2230">
+<tr><th style="width:40%;text-align:right;color:#2F5FCC">&#x2067;L* (אצלנו)&#x2069;</th><th style="width:40%;text-align:right">&#x2067;רשת נוירונים&#x2069;</th><th style="width:20%;text-align:right"></th></tr>
+<tr><td style="text-align:right;color:#2F5FCC">&#x2067;מתכנן ניסויים בעצמו&#x2069;</td><td style="text-align:right">&#x2067;מקבלת המון דוגמאות מראש&#x2069;</td><td style="text-align:right;color:#4A5361">&#x2067;נתונים&#x2069;</td></tr>
+<tr><td style="text-align:right;color:#2F5FCC">&#x2067;חוקים מדויקים&#x2069;</td><td style="text-align:right">&#x2067;״כנראה X״ (הסתברות)&#x2069;</td><td style="text-align:right;color:#4A5361">&#x2067;תוצאה&#x2069;</td></tr>
+<tr><td style="text-align:right;color:#2F5FCC">&#x2067;טבלה וגרף שאפשר לקרוא&#x2069;</td><td style="text-align:right">&#x2067;קשה להסביר למה&#x2069;</td><td style="text-align:right;color:#4A5361">&#x2067;הסבר&#x2069;</td></tr>
+<tr><td style="text-align:right;color:#2F5FCC">&#x2067;פחות משנייה, מחשב רגיל&#x2069;</td><td style="text-align:right">&#x2067;אימון ו-GPU&#x2069;</td><td style="text-align:right;color:#4A5361">&#x2067;משאבים&#x2069;</td></tr>
+</table>
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;השם המקצועי: Active Automata Learning. האלגוריתם: L* של Dana Angluin, 1987. נכתב אצלנו מאפס.&#x2069;</p>
+<p style="font-size:32px;font-weight:600;line-height:1.4;color:#2F5FCC;text-align:right">&#x2067;למכשיר עם חוקים קבועים, אלגוריתם מדויק עדיף: מהיר, שקוף, ואפשר לבדוק אותו.&#x2069;</p>
+</div>
+
+</section></div>
+<div class="frame"><section id="poc" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:36px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;ה-POC&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;מה בנינו: חמישה חלקים, פקודה אחת&#x2069;</h2>
+</div>
+<div style="display:flex;flex-direction:row-reverse;align-items:center;gap:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FBEBEB;border:2px solid #B4372F;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">device_sim.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;הקופסה השחורה. תהליך נפרד, רק TCP.&#x2069;</p>
+</div>
+<svg style="flex:none;width:56px;height:28px" viewBox="0 0 100 50" preserveAspectRatio="none"><polygon points="0,25 40,0 40,14 100,14 100,36 40,36 40,50" fill="#B8C4D9"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:2px solid #2F5FCC;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">learner.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;מנוע הלמידה L*. שולח ניסויים.&#x2069;</p>
+</div>
+<svg style="flex:none;width:56px;height:28px" viewBox="0 0 100 50" preserveAspectRatio="none"><polygon points="0,25 40,0 40,14 100,14 100,36 40,36 40,50" fill="#B8C4D9"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">model.json</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;המודל שנלמד: מצבים ומעברים.&#x2069;</p>
+</div>
+<svg style="flex:none;width:56px;height:28px" viewBox="0 0 100 50" preserveAspectRatio="none"><polygon points="0,25 40,0 40,14 100,14 100,36 40,36 40,50" fill="#B8C4D9"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:2px solid #2F5FCC;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">twin.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;התאום. עונה לפי המודל.&#x2069;</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:row-reverse;gap:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">validator.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;משווה מכשיר מול תאום על רצפים חדשים.&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">baseline.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;Record &amp; Replay, להשוואה.&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">led_app.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;אפליקציית מפעל: מכשיר או תאום.&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">run_demo.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;מריץ הכל ובונה דוח.&#x2069;</p>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;Python בלבד, בלי ספריות חיצוניות. בדיקה אוטומטית עוברת. הלומד אף פעם לא רואה את הקוד של המכשיר.&#x2069;</p>
+
+</section></div>
+<div class="frame"><section id="results" data-transition="fade" style="background:#121826;color:#EEF0F4;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#8FB0FF;text-align:right;letter-spacing:1px">&#x2067;התוצאות&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#EEF0F4;text-align:right">&#x2067;המערכת מצאה הכל, והתאום מדויק&#x2069;</h2>
+</div>
+<div style="display:flex;flex-direction:row-reverse;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+<p style="font-family:Rubik, Arial, sans-serif;font-size:120px;font-weight:700;line-height:1;color:#EEF0F4">4/4</p>
+<p style="font-size:28px;line-height:1.4;color:#A9B4C6;text-align:right">&#x2067;מצבים התגלו&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+<p style="font-family:Rubik, Arial, sans-serif;font-size:120px;font-weight:700;line-height:1;color:#EEF0F4">203</p>
+<p style="font-size:28px;line-height:1.4;color:#A9B4C6;text-align:right">&#x2067;ניסויים מול המכשיר&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+<p style="font-family:Rubik, Arial, sans-serif;font-size:120px;font-weight:700;line-height:1;color:#6B9BFF">100%</p>
+<p style="font-size:28px;line-height:1.4;color:#A9B4C6;text-align:right">&#x2067;התאום צדק&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+<p style="font-family:Rubik, Arial, sans-serif;font-size:120px;font-weight:700;line-height:1;color:#F0A352">27.3%</p>
+<p style="font-size:28px;line-height:1.4;color:#A9B4C6;text-align:right">&#x2067;Record &amp; Replay צדק&#x2069;</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;color:#A9B4C6;text-align:right">&#x2067;התאום: 300 מתוך 300 רצפים חדשים&#x2069;</p>
+<div style="display:flex;flex-direction:row-reverse;height:36px;background:#253049;border-radius:10px;overflow:hidden">
+<div style="width:100%;background:#6B9BFF;border-radius:10px"></div>
+</div>
+<p style="font-size:26px;color:#A9B4C6;text-align:right">&#x2067;Record &amp; Replay: 82 מתוך 300&#x2069;</p>
+<div style="display:flex;flex-direction:row-reverse;height:36px;background:#253049;border-radius:10px;overflow:hidden">
+<div style="width:27.3%;background:#F0A352;border-radius:10px"></div>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.45;color:#A9B4C6;text-align:right">&#x2067;הבדיקה רק על רצפים שהלומד מעולם לא שלח (באורך 3 עד 15). כל 16 המעברים נבדקו. Record &amp; Replay קיבל אותה כמות נתונים כמו הלומד.&#x2069;</p>
+
+</section></div>
+<div class="frame"><section id="replay" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:36px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;למה ההשוואה חשובה&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;איפה Record &amp; Replay נכשל&#x2069;</h2>
+<p style="font-size:30px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;הוא זוכר רק ״לפקודה X עונים Y״. אין לו מושג של מצב, אז ה-ON השני נראה לו כמו הראשון.&#x2069;</p>
+</div>
+<table style="font-family:Heebo, Arial, sans-serif;font-size:34px;color:#1B2230">
+<tr><th style="width:16%;text-align:center">&#x2067;נכון&#x2069;</th><th style="width:18%;text-align:center">STATUS</th><th style="width:18%;text-align:center">ON</th><th style="width:18%;text-align:center">ON</th><th style="width:30%;text-align:right">&#x2067;הרצף ← מי עונה&#x2069;</th></tr>
+<tr><td style="text-align:center">—</td><td style="text-align:center">LED_ON</td><td style="text-align:center">WARN</td><td style="text-align:center">OK</td><td style="text-align:right">&#x2067;המכשיר האמיתי&#x2069;</td></tr>
+<tr style="background:#E6EDFB"><td style="text-align:center;color:#2F5FCC">3/3</td><td style="text-align:center;color:#2F5FCC">LED_ON</td><td style="text-align:center;color:#2F5FCC">WARN</td><td style="text-align:center;color:#2F5FCC">OK</td><td style="text-align:right;color:#2F5FCC">&#x2067;התאום שלנו&#x2069;</td></tr>
+<tr style="background:#FCEFE0"><td style="text-align:center;color:#A35A12">1/3</td><td style="text-align:center;color:#A35A12">&#x2067;LED_OFF ✗&#x2069;</td><td style="text-align:center;color:#A35A12">&#x2067;OK ✗&#x2069;</td><td style="text-align:center">OK</td><td style="text-align:right;color:#A35A12">Record &amp; Replay</td></tr>
+</table>
+<p style="font-size:32px;font-weight:600;line-height:1.4;color:#2F5FCC;text-align:right">&#x2067;הקלטה יודעת מה המכשיר אמר. מודל יודע למה, ולכן עובד גם על רצפים שלא הוקלטו.&#x2069;</p>
+
+</section></div>
+<div class="frame"><section id="swap" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;הרגע של ההדגמה&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;מחליפים את המכשיר בתאום, והאפליקציה לא מרגישה&#x2069;</h2>
+</div>
+<div style="display:flex;flex-direction:row-reverse;align-items:center;gap:40px">
+<div style="width:520px;display:flex;flex-direction:column;gap:12px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:40px">
+<svg style="flex:none;align-self:flex-end;width:56px;height:56px" viewBox="0 0 24 24" fill="none" stroke="#2F5FCC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>
+<p style="font-family:'JetBrains Mono', monospace;font-size:32px;font-weight:700;color:#1B2230;text-align:right">led_app.py</p>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;״אפליקציית המפעל״. מכירה רק כתובת ופורט.&#x2069;</p>
+</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+<p style="font-size:26px;color:#4A5361;text-align:center">&#x2067;משנים רק את הפורט&#x2069;</p>
+<svg style="flex:none;width:160px;height:56px" viewBox="0 0 100 50" preserveAspectRatio="none"><polygon points="0,25 40,0 40,14 100,14 100,36 40,36 40,50" fill="#2F5FCC"/></svg>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:row-reverse;justify-content:space-between;align-items:center;background:#FFFDF8;border:2px solid #8A94A6;border-radius:20px;padding:28px 36px">
+<p style="font-size:32px;font-weight:600;color:#1B2230;text-align:right">&#x2067;המכשיר&#x2069;</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:30px;color:#4A5361">:9001</p>
+</div>
+<div style="display:flex;flex-direction:row-reverse;justify-content:space-between;align-items:center;background:#FFFDF8;border:2px solid #2F5FCC;border-radius:20px;padding:28px 36px">
+<p style="font-size:32px;font-weight:600;color:#2F5FCC;text-align:right">&#x2067;התאום&#x2069;</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:30px;color:#2F5FCC">:9002</p>
+</div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-family:Rubik, Arial, sans-serif;font-size:56px;font-weight:700;line-height:1.2;color:#2F5FCC;text-align:right">&#x2067;10 מתוך 10 תשובות זהות&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;כולל WARN, ERR, FAULT ו-RESET. התאום גם יודע להחזיר תקלות בכוונה (--fault-rate), בלי לסכן אף מכשיר.&#x2069;</p>
+</div>
+
+</section></div>
+<div class="frame"><section id="next" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;גבולות והמשך&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;מה עוד לא הוכחנו, ומה השלב הבא&#x2069;</h2>
+</div>
+<div style="display:flex;flex-direction:row-reverse;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:18px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:40px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:40px;font-weight:600;color:#1B2230;text-align:right">&#x2067;גבולות ה-POC&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;· מכשיר מדומה ופרוטוקול טקסט פשוט מעל TCP&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;· המכשיר צריך פקודת RESET&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;· מצב שלא משפיע על התשובות לא ניתן לגילוי מבחוץ&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;· 300 בדיקות הן ראיה חזקה, לא הוכחה מתמטית&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:18px;background:#FFFDF8;border:2px solid #2F5FCC;border-radius:20px;padding:40px">
+<h3 style="font-family:Rubik, Arial, sans-serif;font-size:40px;font-weight:600;color:#2F5FCC;text-align:right">&#x2067;השלב הבא: AWS&#x2069;</h3>
+<p style="font-size:28px;line-height:1.45;color:#1B2230;text-align:right">&#x2067;· ESP32 אמיתי, מחובר ל-AWS IoT Core דרך MQTT&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#1B2230;text-align:right">&#x2067;· הלומד והתאום רצים ב-ECS Fargate&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#1B2230;text-align:right">&#x2067;· model.json ותוצאות נשמרים ב-S3&#x2069;</p>
+<p style="font-size:28px;line-height:1.45;color:#1B2230;text-align:right">&#x2067;· Step Functions מריץ את כל השלבים, CloudWatch ללוגים&#x2069;</p>
+</div>
+</div>
+<p style="font-size:30px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;הלמידה עצמה לא משתנה: רק הדרך שבה ההודעות מגיעות למכשיר.&#x2069;</p>
+
+</section></div>
+<div class="frame"><section id="run" data-transition="fade" style="background:#121826;color:#EEF0F4;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#8FB0FF;text-align:right;letter-spacing:1px">&#x2067;איך מריצים&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#EEF0F4;text-align:right">&#x2067;פקודה אחת, הכל רץ&#x2069;</h2>
+</div>
+<div style="display:flex;flex-direction:row-reverse;gap:48px;align-items:center">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:30px;line-height:1.45;color:#A9B4C6;text-align:right">&#x2067;רק Python, בלי התקנות.&#x2069;</p>
+<p style="font-size:30px;line-height:1.45;color:#A9B4C6;text-align:right">&#x2067;‎--pause עוצר בין השלבים, בשביל הצגה חיה.&#x2069;</p>
+<p style="font-size:30px;line-height:1.45;color:#A9B4C6;text-align:right">&#x2067;בסוף נפתח דוח: out/report.html&#x2069;</p>
+</div>
+<div style="width:820px;display:flex;flex-direction:column;gap:16px;background:#0B0F18;border:1px solid #2E3A52;border-radius:20px;padding:40px 48px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:34px;color:#8FB0FF">$ cd poc</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:34px;color:#EEF0F4">$ python run_demo.py --pause</p>
+</div>
+</div>
+<hr style="border-top:1px solid #2E3A52">
+<p style="font-family:Rubik, Arial, sans-serif;font-size:52px;font-weight:600;line-height:1.3;color:#EEF0F4;text-align:right">&#x2067;לא מספיק שהתאום נראה כמו המכשיר. צריך למדוד מתי הוא באמת מתנהג כמוהו.&#x2069;</p>
+
+</section></div>
+<script>
+function fit() {
+  if (window.matchMedia("print").matches) return;
+  const s = Math.min(1, (window.innerWidth - 32) / 1920);
+  document.querySelectorAll(".frame").forEach(f => {
+    f.style.transform = "scale(" + s + ")";
+    f.style.marginLeft = ((window.innerWidth - 1920 * s) / 2) + "px";
+    f.style.height = (1080 * s) + "px";
+    f.style.marginBottom = "24px";
+  });
+}
+window.addEventListener("resize", fit); fit();
+</script>
+</body>
+</html>

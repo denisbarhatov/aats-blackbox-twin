@@ -1,0 +1,47 @@
+<section id="poc" data-transition="fade" style="background:#F5F3EE;color:#1B2230;font-family:Heebo, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:36px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;color:#2F5FCC;text-align:right;letter-spacing:1px">&#x2067;ה-POC&#x2069;</p>
+<h2 style="font-family:Rubik, Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1;color:#1B2230;text-align:right">&#x2067;מה בנינו: חמישה חלקים, פקודה אחת&#x2069;</h2>
+</div>
+<div style="display:flex;flex-direction:row-reverse;align-items:center;gap:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FBEBEB;border:2px solid #B4372F;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">device_sim.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;הקופסה השחורה. תהליך נפרד, רק TCP.&#x2069;</p>
+</div>
+<x-shape kind="arrow-left" style="background:#B8C4D9;width:56px;height:28px"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:2px solid #2F5FCC;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">learner.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;מנוע הלמידה L*. שולח ניסויים.&#x2069;</p>
+</div>
+<x-shape kind="arrow-left" style="background:#B8C4D9;width:56px;height:28px"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">model.json</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;המודל שנלמד: מצבים ומעברים.&#x2069;</p>
+</div>
+<x-shape kind="arrow-left" style="background:#B8C4D9;width:56px;height:28px"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:2px solid #2F5FCC;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">twin.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;התאום. עונה לפי המודל.&#x2069;</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:row-reverse;gap:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">validator.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;משווה מכשיר מול תאום על רצפים חדשים.&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">baseline.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;Record &amp; Replay, להשוואה.&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">led_app.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;אפליקציית מפעל: מכשיר או תאום.&#x2069;</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFDF8;border:1px solid #E2DFD6;border-radius:20px;padding:28px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;font-weight:700;color:#1B2230;text-align:right">run_demo.py</p>
+<p style="font-size:26px;line-height:1.4;color:#4A5361;text-align:right">&#x2067;מריץ הכל ובונה דוח.&#x2069;</p>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.45;color:#4A5361;text-align:right">&#x2067;Python בלבד, בלי ספריות חיצוניות. בדיקה אוטומטית עוברת. הלומד אף פעם לא רואה את הקוד של המכשיר.&#x2069;</p>
+<aside>השורה העליונה היא הזרימה: המכשיר הנסתר, הלומד שמדבר איתו דרך TCP, המודל שנשמר, והתאום שנטען ממנו. השורה התחתונה היא הכלים שמוכיחים שזה עובד. הכל רץ בפקודה אחת: python run_demo.py.</aside>
+</section>

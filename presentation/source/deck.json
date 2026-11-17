@@ -1,0 +1,19 @@
+{
+  "v": 4,
+  "createdOnFiles": {"v": 1, "at": "2026-11-17T22:50:00Z"},
+  "lists": "css",
+  "title": "BlackBox Twin — POC",
+  "order": ["cover", "problem", "idea", "device", "packets", "table", "insight", "loop", "notai", "poc", "results", "replay", "swap", "next", "run"],
+  "sections": {
+    "s1": {"description": "הבעיה והרעיון", "start": "cover"},
+    "s2": {"description": "איך זה עובד: המכשיר, הפקודות והלמידה", "start": "device"},
+    "s3": {"description": "ה-POC שבנינו והתוצאות", "start": "poc"},
+    "s4": {"description": "גבולות, השלב הבא ואיך מריצים", "start": "next"}
+  },
+  "faces": {
+    "rubik": {"family": "Rubik", "href": "https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&display=swap"},
+    "heebo": {"family": "Heebo", "href": "https://fonts.googleapis.com/css2?family=Heebo:wght@300..800&display=swap"},
+    "jetbrains-mono": {"family": "JetBrains Mono", "href": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400..700&display=swap"}
+  },
+  "designSystems": []
+}
