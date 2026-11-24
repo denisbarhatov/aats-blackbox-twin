@@ -86,6 +86,7 @@ Python · Scapy · FastAPI · Docker · React / Next.js · SQLite → PostgreSQL
 
 ## מסמכים
 
+- [web/index.html](web/index.html) — **מעבדה אינטראקטיבית בדפדפן**: לוחצים על פקודות, צופים בלמידה, בודקים את התאום ומריצים את ההוכחה. בלי טרמינל ובלי התקנה.
 - [INSTRUCTIONS.md](INSTRUCTIONS.md) — **איך עובדים עם הפרויקט**: התקנה, הרצה, בדיקות, הרצה ידנית של כל חלק, ושלבי AWS IoT Core.
 - [docs/BlackBox_Twin_Project_Report.docx](docs/BlackBox_Twin_Project_Report.docx) — **דוח הפרויקט** (Word, בעברית): מה עשינו, מה עובד ואיך זה עובד.
 - [presentation/](presentation/README.md) — **המצגת** (PDF ו-HTML): איך זה עובד ומה ה-POC הוכיח.

@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BlackBox Twin Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&family=Rubik:wght@500;600;700&display=swap">
+<style>
+/* Layout: a lab bench read top to bottom: device → learning → twin → proof → another device. Each station is one panel. */
+:root {
+  --bg: #EDF0F4;
+  --panel: #FFFFFF;
+  --panel-2: #F6F8FB;
+  --ink: #142033;
+  --muted: #5A6579;
+  --line: #D5DBE4;
+  --accent: #2F5FCC;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E3EAFA;
+  --ok: #1D7A4B;
+  --ok-soft: #DFF1E7;
+  --warn: #A85D0C;
+  --warn-soft: #FBEAD4;
+  --bad: #BF3426;
+  --bad-soft: #F8E0DC;
+  --term: #101826;
+  --term-fg: #D6DFEE;
+  --term-dim: #7D8AA3;
+  --board: #1C4A47;
+  --board-edge: #2C6A64;
+  --chip: #23272E;
+  --led-off: #4A5654;
+  --led-on: #FFC93C;
+  --led-dim: #B98F2A;
+  --led-fault: #FF4B3A;
+  --s0: #2F5FCC; --s1: #1D7A4B; --s2: #A85D0C; --s3: #BF3426; --s4: #7447BF; --s5: #0B7A88;
+  --font-display: "Rubik", "IBM Plex Sans Hebrew", "Segoe UI", Arial, sans-serif;
+  --font-body: "IBM Plex Sans Hebrew", "Segoe UI", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E131B; --panel: #161D28; --panel-2: #1B2431; --ink: #E5EAF2; --muted: #98A4B8; --line: #2A3445;
+    --accent: #7EA1FF; --accent-ink: #0E131B; --accent-soft: #1D2943;
+    --ok: #4CC58B; --ok-soft: #14301F; --warn: #F0A24E; --warn-soft: #382812; --bad: #FF7B6C; --bad-soft: #3A1B18;
+    --term: #0A0F17; --term-fg: #D6DFEE; --term-dim: #6F7C93;
+    --board: #163B38; --board-edge: #25564F; --chip: #0F1215; --led-off: #33403E;
+    --s0: #7EA1FF; --s1: #4CC58B; --s2: #F0A24E; --s3: #FF7B6C; --s4: #B394F2; --s5: #4FC4D2;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E131B; --panel: #161D28; --panel-2: #1B2431; --ink: #E5EAF2; --muted: #98A4B8; --line: #2A3445;
+  --accent: #7EA1FF; --accent-ink: #0E131B; --accent-soft: #1D2943;
+  --ok: #4CC58B; --ok-soft: #14301F; --warn: #F0A24E; --warn-soft: #382812; --bad: #FF7B6C; --bad-soft: #3A1B18;
+  --term: #0A0F17; --term-fg: #D6DFEE; --term-dim: #6F7C93;
+  --board: #163B38; --board-edge: #25564F; --chip: #0F1215; --led-off: #33403E;
+  --s0: #7EA1FF; --s1: #4CC58B; --s2: #F0A24E; --s3: #FF7B6C; --s4: #B394F2; --s5: #4FC4D2;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+.app { max-width: 1140px; margin: 0 auto; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 22px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.25; }
+h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 22px; font-weight: 600; }
+h3 { font-size: 15px; font-weight: 600; color: var(--muted); }
+p { margin: 0; }
+.mono, code, .cmd { font-family: var(--font-mono); }
+code { font-size: 0.92em; background: var(--panel-2); border: 1px solid var(--line); padding: 0 5px; border-radius: 4px; direction: ltr; unicode-bidi: isolate; }
+.lede { color: var(--muted); max-width: 70ch; }
+.small { font-size: 13px; color: var(--muted); }
+
+/* header */
+.top { display: flex; flex-direction: column; gap: 14px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); direction: ltr; text-align: right; }
+.stepper { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 4px 0 0; list-style: none; }
+.stepper a { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 14px; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; color: var(--ink); text-decoration: none; font-size: 14px; }
+.stepper a:hover { border-color: var(--accent); }
+.stepper b { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-family: var(--font-mono); font-size: 12px; }
+
+/* panels */
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; scroll-margin-top: 16px; position: relative; }
+.panel-head { display: flex; gap: 14px; align-items: flex-start; }
+.num { flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--ink); color: var(--panel); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 600; }
+.panel-head > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+@media (max-width: 820px) { .grid-2 { grid-template-columns: minmax(0, 1fr); } }
+.locked-note { display: none; }
+.panel.locked > :not(.panel-head):not(.locked-note) { opacity: 0.28; pointer-events: none; filter: saturate(0.4); }
+.panel.locked .locked-note { display: flex; gap: 10px; align-items: center; background: var(--warn-soft); color: var(--warn); border-radius: 10px; padding: 10px 14px; font-weight: 500; }
+
+/* buttons */
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button, select, input { font: inherit; }
+.btn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 9px; padding: 7px 14px; cursor: pointer; font-weight: 500; }
+.btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover:not(:disabled) { color: var(--accent-ink); filter: brightness(1.08); }
+.btn.cmd { font-family: var(--font-mono); font-weight: 600; min-width: 74px; letter-spacing: 0.02em; }
+.btn.cmd.reset { color: var(--muted); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+select, input[type="number"] { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 6px 8px; }
+label.inline { display: inline-flex; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; }
+
+/* device bench */
+.bench { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 820px) { .bench { grid-template-columns: minmax(0, 1fr); } }
+.board-wrap { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
+.board svg { width: 100%; height: auto; display: block; }
+.led-off { fill: var(--led-off); }
+.led-on { fill: var(--led-on); filter: drop-shadow(0 0 8px var(--led-on)); }
+.led-dim { fill: var(--led-dim); filter: drop-shadow(0 0 3px var(--led-dim)); }
+.led-fault { fill: var(--led-fault); filter: drop-shadow(0 0 8px var(--led-fault)); animation: blink 0.7s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .led-fault { animation: none; } .flash { animation: none !important; } }
+
+.term { background: var(--term); color: var(--term-fg); border-radius: 10px; font-family: var(--font-mono); font-size: 13.5px; direction: ltr; text-align: left; padding: 12px 14px; height: 268px; overflow-y: auto; }
+.term .line { display: grid; grid-template-columns: 34px 92px 18px minmax(0, 1fr); gap: 6px; white-space: nowrap; }
+.term .n { color: var(--term-dim); }
+.term .arr { color: var(--term-dim); }
+.term .example { color: var(--term-dim); font-style: italic; margin-bottom: 4px; }
+.out-ok { color: #7FE0A8; } .out-warn { color: #FFC277; } .out-err { color: #FF8C7E; } .out-info { color: #9DB9FF; }
+
+.peek { display: flex; flex-direction: column; gap: 10px; }
+.switch { display: inline-flex; gap: 10px; align-items: center; cursor: pointer; font-weight: 500; }
+.switch input { width: 18px; height: 18px; accent-color: var(--accent); }
+.hidden-state { display: inline-flex; gap: 8px; align-items: center; background: var(--warn-soft); color: var(--warn); padding: 4px 12px; border-radius: 999px; font-weight: 600; }
+
+/* tables */
+.scroll { overflow-x: auto; max-width: 100%; }
+table.grid { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13.5px; }
+table.grid th, table.grid td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+table.grid th { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); font-weight: 600; background: var(--panel-2); position: sticky; top: 0; }
+table.grid td.m, table.grid th.m { font-family: var(--font-mono); direction: ltr; text-align: left; }
+table.grid tr.cur td { background: var(--accent-soft); }
+.state-tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-weight: 600; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+
+/* learning */
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 640px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; }
+.tile .v { font-family: var(--font-mono); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tile .k { font-size: 13px; color: var(--muted); }
+.activity { background: var(--term); color: var(--term-fg); border-radius: 10px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; min-height: 74px; }
+.activity .what { font-family: var(--font-body); font-size: 14px; color: var(--term-dim); }
+.activity .io { font-family: var(--font-mono); font-size: 14.5px; direction: ltr; text-align: left; white-space: pre-wrap; word-break: break-word; }
+.learn-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .learn-grid { grid-template-columns: minmax(0, 1fr); } }
+.obs { border: 1px solid var(--line); border-radius: 10px; max-height: 520px; overflow: auto; }
+.obs table.grid th, .obs table.grid td { padding: 6px 9px; }
+.obs td.lbl { font-family: var(--font-mono); direction: ltr; text-align: left; font-weight: 500; }
+.obs tr.sep td { background: var(--panel-2); font-family: var(--font-body); font-size: 12.5px; color: var(--muted); padding: 4px 10px; font-weight: 600; }
+.obs td.cell { font-family: var(--font-mono); direction: ltr; text-align: left; color: var(--ink); }
+.obs td.cell.unk { color: var(--line); }
+.obs td.verdict { font-size: 12.5px; }
+.obs tr.upper td.lbl { box-shadow: inset -4px 0 0 var(--c); }
+.obs tr.newrow td { background: var(--bad-soft); }
+.badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 1px 9px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.badge.new { background: var(--bad); color: #fff; }
+.badge.same { background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); }
+.flash { animation: flash 0.9s ease-out; }
+@keyframes flash { from { background: var(--led-on); color: #000; } }
+.log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.log li { border-inline-start: 3px solid var(--line); padding: 2px 10px; font-size: 14px; }
+.log li.k-new { border-color: var(--ok); }
+.log li.k-hyp { border-color: var(--accent); }
+.log li.k-cex { border-color: var(--bad); }
+.log li.k-done { border-color: var(--ok); font-weight: 600; }
+.progress { height: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.progress > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.15s; }
+.progress.bad > i { background: var(--bad); }
+.progress.good > i { background: var(--ok); }
+
+/* graph */
+.graph { border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); overflow-x: auto; }
+.graph svg { display: block; min-width: 560px; width: 100%; height: auto; }
+.g-node circle { fill: var(--panel); stroke-width: 3; }
+.g-node.active circle { fill: var(--accent-soft); stroke-width: 5; }
+.g-node text { font-family: var(--font-mono); fill: var(--ink); text-anchor: middle; }
+.g-edge path { fill: none; stroke: var(--muted); stroke-width: 1.6; }
+.g-edge text, .g-loop text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink); text-anchor: middle; }
+.g-edge text .o, .g-loop text .o { fill: var(--muted); }
+.g-arrow { fill: var(--muted); }
+.g-start { stroke: var(--ink); stroke-width: 2; fill: none; }
+
+/* validation */
+.result { display: grid; grid-template-columns: 150px minmax(0, 1fr) 74px; gap: 12px; align-items: center; }
+.result .name { font-weight: 600; }
+.result .pct { font-family: var(--font-mono); font-size: 20px; font-weight: 600; text-align: left; direction: ltr; font-variant-numeric: tabular-nums; }
+.bar { height: 22px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; }
+.bar.twin > i { background: var(--accent); }
+.bar.rr > i { background: var(--warn); }
+.diff { font-family: var(--font-mono); font-size: 13px; direction: ltr; display: flex; flex-wrap: wrap; gap: 4px; }
+.diff span { padding: 1px 6px; border-radius: 4px; background: var(--panel-2); border: 1px solid var(--line); }
+.diff span.x { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+.diff span.v { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+
+/* editor */
+.presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.preset { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--panel); cursor: pointer; text-align: right; display: flex; flex-direction: column; gap: 4px; color: var(--ink); }
+.preset:hover { border-color: var(--accent); }
+.preset[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.preset b { font-family: var(--font-display); font-weight: 600; font-size: 16px; }
+.preset span { font-size: 13px; color: var(--muted); }
+.editor td { vertical-align: middle; }
+.editor input { width: 100px; font-family: var(--font-mono); font-size: 13px; padding: 4px 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 6px; direction: ltr; }
+.editor select { font-family: var(--font-mono); font-size: 13px; padding: 4px 4px; }
+.editor .pair { display: inline-flex; gap: 4px; align-items: center; direction: ltr; }
+.note { background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+footer { color: var(--muted); font-size: 13px; text-align: center; }
+footer a { color: var(--accent); }
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0} [hidden]{display:none!important}</style>
+</head>
+<body>
+
+<div class="app" dir="rtl">
+  <header class="top">
+    <div class="eyebrow">AATS · BlackBox Twin · POC</div>
+    <h1>מעבדת BlackBox Twin</h1>
+    <p class="lede">כאן אפשר לשחק עם כל ה-POC בלי טרמינל. שולחים פקודות למכשיר שההתנהגות שלו נסתרת, צופים במנוע הלמידה (L*) מגלה את המצבים שלו, בודקים את התאום שנבנה, ומוכיחים שהוא מדויק. האלגוריתם זהה לזה שב-<code>poc/learner.py</code>, ורץ כאן בדפדפן.</p>
+    <ol class="stepper">
+      <li><a href="#device"><b>1</b>המכשיר הנסתר</a></li>
+      <li><a href="#learn"><b>2</b>הלמידה</a></li>
+      <li><a href="#twin"><b>3</b>התאום</a></li>
+      <li><a href="#proof"><b>4</b>ההוכחה</a></li>
+      <li><a href="#other"><b>5</b>מכשיר אחר</a></li>
+    </ol>
+  </header>
+
+  <!-- 1. DEVICE -->
+  <section class="panel" id="device">
+    <div class="panel-head"><div class="num">1</div><div>
+      <h2>המכשיר הנסתר</h2>
+      <p class="lede">זה ה-ESP32 עם נורת LED. לוחצים על פקודה, והמכשיר עונה. מבחוץ רואים רק את הנורה ואת התשובה, לא את המצב הפנימי. נסו ללחוץ <code>ON</code> שלוש פעמים ברצף.</p>
+    </div></div>
+    <div class="bench">
+      <div class="board-wrap">
+        <div class="board" aria-label="לוח ESP32 עם נורת LED">
+          <svg viewBox="0 0 300 190" role="img">
+            <rect x="6" y="6" width="288" height="178" rx="14" fill="var(--board)" stroke="var(--board-edge)" stroke-width="3"/>
+            <g fill="var(--board-edge)">
+              <circle cx="24" cy="24" r="6"/><circle cx="276" cy="24" r="6"/><circle cx="24" cy="166" r="6"/><circle cx="276" cy="166" r="6"/>
+            </g>
+            <g fill="#C9A646" opacity="0.85">
+              <rect x="50" y="10" width="6" height="12"/><rect x="64" y="10" width="6" height="12"/><rect x="78" y="10" width="6" height="12"/><rect x="92" y="10" width="6" height="12"/><rect x="106" y="10" width="6" height="12"/><rect x="120" y="10" width="6" height="12"/><rect x="134" y="10" width="6" height="12"/>
+              <rect x="50" y="168" width="6" height="12"/><rect x="64" y="168" width="6" height="12"/><rect x="78" y="168" width="6" height="12"/><rect x="92" y="168" width="6" height="12"/><rect x="106" y="168" width="6" height="12"/><rect x="120" y="168" width="6" height="12"/><rect x="134" y="168" width="6" height="12"/>
+            </g>
+            <rect x="40" y="48" width="120" height="94" rx="6" fill="var(--chip)"/>
+            <text x="100" y="92" text-anchor="middle" font-family="IBM Plex Mono, Consolas, monospace" font-size="15" fill="#8C96A3">ESP32</text>
+            <text x="100" y="112" text-anchor="middle" font-family="IBM Plex Mono, Consolas, monospace" font-size="10" fill="#5F6873">esp32-01</text>
+            <path d="M160 95 H205" stroke="#C9A646" stroke-width="2" opacity="0.7"/>
+            <circle cx="232" cy="95" r="26" fill="none" stroke="var(--board-edge)" stroke-width="2"/>
+            <circle id="led" class="led-off" cx="232" cy="95" r="18"/>
+            <text x="232" y="146" text-anchor="middle" font-family="IBM Plex Mono, Consolas, monospace" font-size="11" fill="#9FC2BC">LED</text>
+          </svg>
+        </div>
+        <div class="row" id="dev-buttons"></div>
+      </div>
+      <div class="term" id="dev-term" aria-live="polite"></div>
+    </div>
+    <div class="peek">
+      <label class="switch"><input type="checkbox" id="peek"> להציץ פנימה (רק לשם ההסבר: הלומד אף פעם לא רואה את זה)</label>
+      <div id="peek-box" hidden>
+        <div class="row" style="margin-bottom:10px">המצב הנסתר עכשיו: <span class="hidden-state mono" id="hidden-state">OFF</span></div>
+        <div class="scroll"><table class="grid" id="hidden-table"></table></div>
+        <p class="small" style="margin-top:8px">בכל תא: התשובה, ואחרי החץ המצב הבא. שימו לב ש-ON ו-WARN עונים אותו דבר ל-STATUS. זו המלכודת.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. LEARN -->
+  <section class="panel" id="learn">
+    <div class="panel-head"><div class="num">2</div><div>
+      <h2>הלמידה: L* ממלא טבלת ניסויים</h2>
+      <p class="lede">הלומד יודע רק אילו פקודות מותרות. כל ניסוי הוא <code>RESET</code> ואחריו רצף פקודות. שורות שעונות אחרת הן מצבים שונים. כשהטבלה סגורה, הוא בונה השערה ובודק אותה ב-200 רצפים אקראיים.</p>
+    </div></div>
+    <div class="row">
+      <button class="btn primary" id="play">▶ צפו בלמידה מההתחלה</button>
+      <button class="btn" id="pause" disabled>השהה</button>
+      <button class="btn" id="step">צעד אחד</button>
+      <button class="btn" id="skip">דלג לסוף</button>
+      <label class="inline">מהירות
+        <select id="speed"><option value="1.9">איטית</option><option value="1" selected>רגילה</option><option value="0.3">מהירה</option></select>
+      </label>
+      <label class="inline">Seed <input type="number" id="seed" value="7" min="0" max="9999" style="width:80px"></label>
+    </div>
+    <div class="tiles">
+      <div class="tile"><span class="v" id="t-runs">0</span><span class="k">ניסויים במכשיר</span></div>
+      <div class="tile"><span class="v" id="t-cmds">0</span><span class="k">פקודות שנשלחו</span></div>
+      <div class="tile"><span class="v" id="t-states">1</span><span class="k">מצבים שנמצאו</span></div>
+      <div class="tile"><span class="v" id="t-round">1</span><span class="k">סבב</span></div>
+    </div>
+    <div class="activity"><div class="what" id="act-what"></div><div class="io" id="act-io"></div></div>
+    <div class="learn-grid">
+      <div class="obs"><table class="grid" id="obs"></table></div>
+      <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+        <div>
+          <h3 style="margin-bottom:8px">בדיקת ההשערה</h3>
+          <div class="progress" id="eq-bar"><i></i></div>
+          <p class="small" id="eq-text" style="margin-top:6px">עוד לא התחילה</p>
+        </div>
+        <div>
+          <h3 style="margin-bottom:8px">מה קרה</h3>
+          <ul class="log" id="events"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. TWIN -->
+  <section class="panel" id="twin">
+    <div class="panel-head"><div class="num">3</div><div>
+      <h2>התאום: המודל שנלמד, ושימוש בו</h2>
+      <p class="lede">זה גרף המצבים שהלומד בנה, בלי לראות את הקוד של המכשיר. מתחת, כל פקודה נשלחת גם למכשיר האמיתי וגם לתאום, וההשוואה מוצגת בכל שורה.</p>
+    </div></div>
+    <div class="locked-note">⏳ הלמידה עוד רצה. התאום ייבנה כשהיא תסתיים.</div>
+    <div class="graph" id="graph"></div>
+    <div class="row" id="twin-buttons"></div>
+    <div class="row">
+      <label class="inline">הזרקת תקלות בתאום <input type="range" id="fault" min="0" max="50" step="5" value="0" style="width:140px"> <b class="mono" id="fault-v">0%</b></label>
+      <span class="small">בתאום בלבד: חלק מהפקודות יענו <code>ERR_INJECTED</code>, כדי לבדוק תוכנה בלי לסכן חומרה.</span>
+    </div>
+    <div class="scroll" style="max-height:300px;overflow-y:auto;border:1px solid var(--line);border-radius:10px">
+      <table class="grid" id="twin-log"></table>
+    </div>
+    <details>
+      <summary style="cursor:pointer;font-weight:500">הצג את model.json</summary>
+      <pre class="term" id="model-json" style="height:auto;max-height:340px;white-space:pre;margin:10px 0 0"></pre>
+    </details>
+  </section>
+
+  <!-- 4. PROOF -->
+  <section class="panel" id="proof">
+    <div class="panel-head"><div class="num">4</div><div>
+      <h2>ההוכחה: 300 רצפים שהלומד לא ראה</h2>
+      <p class="lede">כל רצף נשלח למכשיר, לתאום, ול-Record &amp; Replay. Record &amp; Replay מקליט סשנים ומחזיר לכל פקודה את התשובה הנפוצה ביותר, בלי מושג של מצב. הוא מקבל אותה כמות נתונים כמו הלומד.</p>
+    </div></div>
+    <div class="locked-note">⏳ קודם צריך לסיים את הלמידה.</div>
+    <div class="row"><button class="btn primary" id="validate">▶ הרץ אימות</button><span class="small" id="val-status"></span></div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="result"><span class="name" style="color:var(--accent)">התאום שלנו</span><div class="bar twin"><i id="bar-twin"></i></div><span class="pct" id="pct-twin">–</span></div>
+      <div class="result"><span class="name" style="color:var(--warn)">Record &amp; Replay</span><div class="bar rr"><i id="bar-rr"></i></div><span class="pct" id="pct-rr">–</span></div>
+      <p class="small" id="val-detail"></p>
+    </div>
+    <div id="fails"></div>
+  </section>
+
+  <!-- 5. OTHER DEVICE -->
+  <section class="panel" id="other">
+    <div class="panel-head"><div class="num">5</div><div>
+      <h2>מכשיר אחר, אותו לומד</h2>
+      <p class="lede">בחרו קושחה אחרת, או ערכו את הטבלה הנסתרת בעצמכם. הלומד לא משתנה. אחרי שינוי, הלמידה רצה מחדש על המכשיר החדש.</p>
+    </div></div>
+    <div class="presets" id="presets"></div>
+    <div class="scroll"><table class="grid editor" id="editor"></table></div>
+    <p class="small">כל תא: תשובה ← לאיזה מצב עוברים. השינוי חל מיד. <code>RESET</code> תמיד מחזיר למצב ההתחלה (השורה הראשונה).</p>
+  </section>
+
+  <footer>
+    הקוד המלא, ה-POC ב-Python והמצגת: <a href="https://github.com/denisbarhatov/aats-blackbox-twin" target="_blank" rel="noopener">github.com/denisbarhatov/aats-blackbox-twin</a>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const A = ["ON", "OFF", "STATUS", "PING"];
+const PRESETS = {
+  original: {
+    label: "המקורי", desc: "ננעל אחרי 3 פעמים ON ברצף. ON ו-WARN נראים זהים ב-STATUS.",
+    led: { OFF: "off", ON: "on", WARN: "on", FAULT: "fault" },
+    table: {
+      OFF:   { ON: ["OK", "ON"],     OFF: ["OK", "OFF"],   STATUS: ["LED_OFF", "OFF"], PING: ["PONG", "OFF"] },
+      ON:    { ON: ["WARN", "WARN"], OFF: ["OK", "OFF"],   STATUS: ["LED_ON", "ON"],   PING: ["PONG", "ON"] },
+      WARN:  { ON: ["ERR", "FAULT"], OFF: ["OK", "OFF"],   STATUS: ["LED_ON", "WARN"], PING: ["PONG", "WARN"] },
+      FAULT: { ON: ["ERR", "FAULT"], OFF: ["ERR", "FAULT"], STATUS: ["FAULT", "FAULT"], PING: ["ERR", "FAULT"] },
+    },
+  },
+  strict: {
+    label: "רגיש יותר", desc: "ננעל כבר אחרי 2 פעמים ON ברצף. 3 מצבים.",
+    led: { OFF: "off", ON: "on", FAULT: "fault" },
+    table: {
+      OFF:   { ON: ["OK", "ON"],     OFF: ["OK", "OFF"],   STATUS: ["LED_OFF", "OFF"], PING: ["PONG", "OFF"] },
+      ON:    { ON: ["ERR", "FAULT"], OFF: ["OK", "OFF"],   STATUS: ["LED_ON", "ON"],   PING: ["PONG", "ON"] },
+      FAULT: { ON: ["ERR", "FAULT"], OFF: ["ERR", "FAULT"], STATUS: ["FAULT", "FAULT"], PING: ["ERR", "FAULT"] },
+    },
+  },
+  dimmer: {
+    label: "דימר", desc: "ON שני מעמעם, ON שלישי מחזיר לבהיר. STATUS לא מבדיל בין בהיר לעמום.",
+    led: { OFF: "off", BRIGHT: "on", DIM: "dim" },
+    table: {
+      OFF:    { ON: ["OK", "BRIGHT"],     OFF: ["OK", "OFF"], STATUS: ["LED_OFF", "OFF"],   PING: ["PONG", "OFF"] },
+      BRIGHT: { ON: ["DIM", "DIM"],       OFF: ["OK", "OFF"], STATUS: ["LED_ON", "BRIGHT"], PING: ["PONG", "BRIGHT"] },
+      DIM:    { ON: ["BRIGHT", "BRIGHT"], OFF: ["OK", "OFF"], STATUS: ["LED_ON", "DIM"],    PING: ["PONG", "DIM"] },
+    },
+  },
+  pulse: {
+    label: "מונה פולסים", desc: "כל PING מקדם מונה נסתר 0→1→2→0. רק במצב 2 STATUS עונה אחרת. כאן הלומד טועה בסבב הראשון ומתקן את עצמו.",
+    led: { P0: "off", P1: "off", P2: "on" },
+    table: {
+      P0: { ON: ["OK", "P0"], OFF: ["OK", "P0"], STATUS: ["TICK", "P0"], PING: ["PONG", "P1"] },
+      P1: { ON: ["OK", "P1"], OFF: ["OK", "P1"], STATUS: ["TICK", "P1"], PING: ["PONG", "P2"] },
+      P2: { ON: ["OK", "P2"], OFF: ["OK", "P2"], STATUS: ["TOCK", "P2"], PING: ["PONG", "P0"] },
+    },
+  },
+};
+const SCENARIOS = [
+  ["ON", "ON", "STATUS"], ["ON", "ON", "ON", "STATUS"], ["ON", "ON", "ON", "OFF", "PING"],
+  ["ON", "OFF", "ON", "ON", "OFF", "ON"], ["ON", "ON", "OFF", "ON", "ON", "ON", "STATUS", "PING"],
+];
+
+// ---------- core (same logic as the Python POC) ----------
+const K = w => w.join(" ");
+const clone = o => JSON.parse(JSON.stringify(o));
+function makeRng(seed) {
+  let a = (seed >>> 0) || 1;
+  const r = () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  r.int = (lo, hi) => lo + Math.floor(r() * (hi - lo + 1));
+  r.choice = arr => arr[Math.floor(r() * arr.length)];
+  return r;
+}
+class Device {
+  constructor(spec) { this.spec = spec; this.start = Object.keys(spec.table)[0]; this.state = this.start; this.cmds = 0; }
+  step(cmd) {
+    this.cmds++;
+    if (cmd === "RESET") { this.state = this.start; return "RESET_OK"; }
+    const t = this.spec.table[this.state] && this.spec.table[this.state][cmd];
+    if (!t) return "ERR_UNKNOWN";
+    this.state = t[1]; return t[0];
+  }
+  run(word) { this.step("RESET"); return word.map(c => this.step(c)); }
+}
+function runModel(m, word) {
+  let s = m.initial;
+  return word.map(c => { const t = m.trans[s] && m.trans[s][c]; if (!t) return "ERR_UNKNOWN"; s = t[1]; return t[0]; });
+}
+
+// L* for Mealy machines. Runs to the end at once and records every event, so the page can replay it.
+function learn(spec, seed) {
+  const dev = new Device(spec), R = makeRng(seed);
+  const cache = new Map([["", { outs: [], at: -1 }]]);
+  const events = [];
+  let runs = 0;
+  const S = [[]], E = A.map(a => [a]);
+  let tab = { S: [[]], E: E.map(e => e.slice()) };
+  const snap = () => { tab = { S: S.map(s => s.slice()), E: E.map(e => e.slice()) }; };
+  const push = ev => events.push(Object.assign({ tab, runs, cmds: dev.cmds }, ev));
+  function query(w, emit) {
+    const k = K(w);
+    if (cache.has(k)) return cache.get(k).outs;
+    const outs = dev.run(w); runs++;
+    const at = events.length;
+    for (let i = 1; i <= w.length; i++) { const kk = K(w.slice(0, i)); if (!cache.has(kk)) cache.set(kk, { outs: outs.slice(0, i), at }); }
+    if (emit) push({ t: "query", word: w.slice(), outs });
+    return outs;
+  }
+  const cell = (p, s) => query(p.concat(s), true).slice(p.length);
+  const rowKey = p => E.map(e => K(cell(p, e))).join("|");
+
+  push({ t: "start" });
+  let rounds = 0, hyp = null; const cexs = [];
+  while (true) {
+    rounds++;
+    push({ t: "round", round: rounds });
+    let changed = true;
+    while (changed && S.length < 12) {
+      changed = false;
+      const known = new Set(S.map(rowKey));
+      outer: for (const s of S.slice()) for (const a of A) {
+        const sa = s.concat([a]);
+        if (!known.has(rowKey(sa))) { S.push(sa); snap(); push({ t: "newState", seq: sa, round: rounds }); changed = true; break outer; }
+      }
+    }
+    const names = new Map();
+    for (const s of S) { const k = rowKey(s); if (!names.has(k)) names.set(k, "s" + names.size); }
+    const trans = {}, hints = {}, access = {};
+    for (const s of S) {
+      const st = names.get(rowKey(s));
+      if (!(st in access)) access[st] = s.slice();
+      trans[st] = {};
+      for (const a of A) trans[st][a] = [cell(s, [a])[0], names.get(rowKey(s.concat([a]))) || st];
+      hints[st] = trans[st].STATUS[0];
+    }
+    hyp = { initial: "s0", trans, hints, access };
+    push({ t: "hyp", round: rounds, states: names.size });
+    let cex = null; const n = 200;
+    for (let i = 0; i < n; i++) {
+      const len = R.int(1, 12), w = [];
+      for (let j = 0; j < len; j++) w.push(R.choice(A));
+      const real = query(w, false), guess = runModel(hyp, w), ok = K(real) === K(guess);
+      push({ t: "eq", i: i + 1, n, word: w, real, guess, ok, round: rounds });
+      if (!ok) { let m = 0; while (real[m] === guess[m]) m++; cex = w.slice(0, m + 1); break; }
+    }
+    if (!cex) { push({ t: "accepted", round: rounds, states: names.size }); break; }
+    cexs.push(cex);
+    for (let i = 0; i < cex.length; i++) { const suf = cex.slice(i); if (!E.some(e => K(e) === K(suf))) E.push(suf); }
+    snap(); push({ t: "cex", word: cex, round: rounds });
+    if (rounds >= 20) break;
+  }
+  return { model: hyp, cache, events, stats: { runs, cmds: dev.cmds, rounds, cexs, states: Object.keys(hyp.trans).length } };
+}
+
+function makeTests(rng, n, exclude) {
+  const tests = SCENARIOS.slice();
+  const seen = new Set(tests.map(K)); exclude.forEach(k => seen.add(k));
+  let attempts = 0;
+  while (tests.length < n && attempts < n * 50) {
+    attempts++;
+    const len = rng.int(3, 15), w = [];
+    for (let j = 0; j < len; j++) w.push(rng.choice(A));
+    const k = K(w);
+    if (!seen.has(k)) { seen.add(k); tests.push(w); }
+  }
+  return tests;
+}
+function recordReplay(spec, rng, nSessions) {
+  const dev = new Device(spec), seen = {};
+  for (let i = 0; i < nSessions; i++) {
+    const len = rng.int(1, 8), w = [];
+    for (let j = 0; j < len; j++) w.push(rng.choice(A));
+    const outs = dev.run(w);
+    w.forEach((c, j) => { seen[c] = seen[c] || new Map(); seen[c].set(outs[j], (seen[c].get(outs[j]) || 0) + 1); });
+  }
+  const table = {};
+  for (const c in seen) { let best = null, bc = -1; for (const [o, n] of seen[c]) if (n > bc) { best = o; bc = n; } table[c] = best; }
+  return { table, run: w => w.map(c => table[c] || "ERR_UNKNOWN") };
+}
+
+// ---------- page state ----------
+let spec = clone(PRESETS.original), presetKey = "original";
+let L = null;          // learning result
+let t = 0;             // replay position in L.events
+let timer = null;
+let benchDev, liveDev, twinState, twinLog = [], benchLog = [];
+let faultRate = 0, faultRng = makeRng(99);
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const outClass = o => /^(ERR|FAULT)/.test(o) ? "out-err" : /^(WARN|DIM|TOCK)/.test(o) ? "out-warn" : /^RESET/.test(o) ? "out-info" : "out-ok";
+const stateColor = i => `var(--s${i % 6})`;
+
+// ---------- 1. device bench ----------
+function cmdButtons(el, onClick) {
+  el.innerHTML = "";
+  [...A, "RESET"].forEach(c => {
+    const b = document.createElement("button");
+    b.className = "btn cmd" + (c === "RESET" ? " reset" : ""); b.textContent = c;
+    b.addEventListener("click", () => onClick(c));
+    el.appendChild(b);
+  });
+}
+function benchSend(cmd) {
+  const out = benchDev.step(cmd);
+  benchLog.push({ cmd, out });
+  renderBench();
+}
+function renderBench() {
+  const term = $("dev-term");
+  let html = benchLog.length && benchLog[0].example ? '<div class="example">// example session. Press any command to continue.</div>' : "";
+  html += benchLog.map((l, i) => `<div class="line"><span class="n">${String(i + 1).padStart(2, "0")}</span><span>→ ${esc(l.cmd)}</span><span class="arr">←</span><span class="${outClass(l.out)}">${esc(l.out)}</span></div>`).join("");
+  term.innerHTML = html || '<div class="example">// press a command</div>';
+  term.scrollTop = term.scrollHeight;
+  const led = (spec.led && spec.led[benchDev.state]) || "off";
+  $("led").setAttribute("class", "led-" + led);
+  $("hidden-state").textContent = benchDev.state;
+  renderHiddenTable();
+}
+function renderHiddenTable() {
+  const states = Object.keys(spec.table);
+  let h = `<tr><th>מצב</th>${A.map(a => `<th class="m">${a}</th>`).join("")}</tr>`;
+  h += states.map(s => `<tr class="${s === benchDev.state ? "cur" : ""}"><td class="m"><b>${esc(s)}</b></td>${A.map(a => { const [o, nx] = spec.table[s][a]; return `<td class="m">${esc(o)}${nx !== s ? " → " + esc(nx) : ""}</td>`; }).join("")}</tr>`).join("");
+  $("hidden-table").innerHTML = h;
+}
+function resetBench(withExample) {
+  benchDev = new Device(spec); benchLog = [];
+  if (withExample) { ["RESET", "ON", "ON", "STATUS"].forEach(c => benchLog.push({ cmd: c, out: benchDev.step(c), example: true })); }
+  renderBench();
+}
+
+// ---------- 2. learning replay ----------
+const DELAY = { start: 500, round: 600, query: 480, newState: 1100, hyp: 1300, eq: 22, accepted: 900, cex: 1700 };
+function relearn() {
+  stop();
+  L = learn(spec, Number($("seed").value) || 0);
+  t = L.events.length - 1;
+  renderLearn();
+  onLearned();
+}
+function play() {
+  if (!L) relearn();
+  if (t >= L.events.length - 1) t = 0;
+  lockLater(true);
+  $("play").disabled = true; $("pause").disabled = false;
+  const tick = () => {
+    renderLearn();
+    if (t >= L.events.length - 1) { stop(); onLearned(); return; }
+    const ev = L.events[t];
+    t++;
+    timer = setTimeout(tick, (DELAY[ev.t] || 400) * Number($("speed").value));
+  };
+  tick();
+}
+function stop() {
+  if (timer) clearTimeout(timer); timer = null;
+  $("play").disabled = false; $("pause").disabled = true;
+  $("play").textContent = L && t < L.events.length - 1 ? "▶ המשך" : "▶ צפו בלמידה מההתחלה";
+}
+function lockLater(on) { ["twin", "proof"].forEach(id => $(id).classList.toggle("locked", on)); }
+
+function renderLearn() {
+  const ev = L.events[t];
+  $("t-runs").textContent = ev.runs;
+  $("t-cmds").textContent = ev.cmds;
+  $("t-states").textContent = ev.tab.S.length;
+  let round = 1; for (let i = t; i >= 0; i--) if (L.events[i].round) { round = L.events[i].round; break; }
+  $("t-round").textContent = round;
+
+  // activity line
+  const what = $("act-what"), io = $("act-io");
+  const seq = w => w.length ? w.join(" ") : "(nothing)";
+  switch (ev.t) {
+    case "start": what.textContent = "מתחילים. הלומד יודע רק את הפקודות: ON, OFF, STATUS, PING."; io.textContent = ""; break;
+    case "round": what.textContent = `סבב ${ev.round}: ממלאים את טבלת התצפיות`; io.textContent = ""; break;
+    case "query": what.textContent = `ניסוי ${ev.runs} במכשיר`; io.textContent = `send:   RESET ${seq(ev.word)}\nanswer: RESET_OK ${ev.outs.join(" ")}`; break;
+    case "newState": what.textContent = "נמצא מצב חדש! השורה עונה אחרת מכל מצב מוכר, אז היא עוברת למעלה."; io.textContent = `reached by: ${seq(ev.seq)}`; break;
+    case "hyp": what.textContent = `הטבלה סגורה. נבנתה השערה עם ${ev.states} מצבים. עכשיו בודקים אותה.`; io.textContent = ""; break;
+    case "eq": what.textContent = `בדיקת השערה: רצף ${ev.i} מתוך ${ev.n}` + (ev.ok ? "" : " — נמצא הבדל!"); io.textContent = `send:   ${seq(ev.word)}\ndevice: ${ev.real.join(" ")}\nmodel:  ${ev.guess.join(" ")}`; break;
+    case "cex": what.textContent = "דוגמה נגדית: ההשערה טעתה. הסיומות של הרצף נוספות כעמודות חדשות, והלמידה ממשיכה."; io.textContent = `counterexample: ${seq(ev.word)}`; break;
+    case "accepted": what.textContent = `אין אף הבדל ב-200 רצפים. המודל התקבל: ${ev.states} מצבים.`; io.textContent = `saved model.json  (${ev.runs} experiments, ${ev.cmds} commands)`; break;
+  }
+
+  renderObs(ev);
+
+  // equivalence progress
+  let last = null; for (let i = t; i >= 0; i--) { const e = L.events[i]; if (e.t === "eq") { last = e; break; } if (e.t === "round" || e.t === "start") break; }
+  const bar = $("eq-bar");
+  if (last) {
+    bar.firstElementChild.style.width = (100 * last.i / last.n) + "%";
+    bar.className = "progress" + (last.ok ? (last.i === last.n ? " good" : "") : " bad");
+    $("eq-text").textContent = last.ok ? `${last.i} מתוך ${last.n} רצפים תואמים` : `רצף ${last.i}: המכשיר והשערה ענו אחרת`;
+  } else {
+    bar.firstElementChild.style.width = "0"; bar.className = "progress";
+    $("eq-text").textContent = ev.t === "hyp" ? "מתחילה עכשיו" : "תתחיל כשהטבלה תהיה סגורה";
+  }
+
+  // event log
+  const items = [];
+  for (let i = 0; i <= t; i++) {
+    const e = L.events[i];
+    if (e.t === "newState") items.push(["k-new", `מצב חדש s${e.tab.S.length - 1}: הגענו אליו דרך <code>${esc(seq(e.seq))}</code>`]);
+    if (e.t === "hyp") items.push(["k-hyp", `השערה: ${e.states} מצבים (סבב ${e.round})`]);
+    if (e.t === "cex") items.push(["k-cex", `דוגמה נגדית <code>${esc(seq(e.word))}</code>`]);
+    if (e.t === "accepted") items.push(["k-done", `המודל התקבל: ${e.states} מצבים, ${e.runs} ניסויים`]);
+  }
+  $("events").innerHTML = items.length ? items.map(([c, h]) => `<li class="${c}">${h}</li>`).join("") : '<li class="small">עוד לא קרה כלום</li>';
+}
+
+function renderObs(ev) {
+  const { S, E } = ev.tab;
+  const known = w => { const c = L.cache.get(K(w)); return c && c.at <= t ? c.outs : null; };
+  const fresh = w => { const c = L.cache.get(K(w)); return c && c.at === t; };
+  const cellOf = (p, e) => { const o = known(p.concat(e)); return o ? o.slice(p.length).join(" ") : null; };
+  const sig = p => { const cs = E.map(e => cellOf(p, e)); return cs.includes(null) ? null : cs.join("|"); };
+  const upperSig = S.map(sig);
+  const label = p => p.length ? p.join(" ") : "RESET";
+  const head = `<tr><th>הגענו דרך</th>${E.map(e => `<th class="m">${esc(e.join(" "))}</th>`).join("")}<th>מסקנה</th></tr>`;
+  const rowHtml = (p, cls, verdict, color) => `<tr class="${cls}" style="--c:${color || "transparent"}"><td class="lbl">${esc(label(p))}</td>${E.map(e => { const v = cellOf(p, e); return `<td class="cell ${v === null ? "unk" : ""} ${fresh(p.concat(e)) ? "flash" : ""}">${v === null ? "·" : esc(v)}</td>`; }).join("")}<td class="verdict">${verdict}</td></tr>`;
+  let h = head + `<tr class="sep"><td colspan="${E.length + 2}">מצבים שנמצאו (S)</td></tr>`;
+  S.forEach((p, i) => { h += rowHtml(p, "upper", `<span class="state-tag"><span class="dot" style="background:${stateColor(i)}"></span>s${i}</span>`, stateColor(i)); });
+  h += `<tr class="sep"><td colspan="${E.length + 2}">עוד פקודה אחת מכל מצב (S·A)</td></tr>`;
+  const inS = new Set(S.map(K)), done = new Set();
+  S.forEach(s => A.forEach(a => {
+    const p = s.concat([a]), k = K(p);
+    if (inS.has(k) || done.has(k)) return; done.add(k);
+    const sg = sig(p);
+    let verdict = '<span class="small">…</span>', cls = "";
+    if (sg !== null) {
+      const j = upperSig.indexOf(sg);
+      if (j >= 0) verdict = `<span class="badge same"><span class="dot" style="background:${stateColor(j)}"></span>= s${j}</span>`;
+      else if (!upperSig.includes(null)) { verdict = '<span class="badge new">מצב חדש!</span>'; cls = "newrow"; }
+    }
+    h += rowHtml(p, cls, verdict);
+  }));
+  $("obs").innerHTML = h;
+}
+
+function onLearned() {
+  lockLater(false);
+  stop();
+  liveDev = new Device(spec); twinState = L.model.initial; twinLog = [];
+  ["ON", "ON", "STATUS", "ON"].forEach(c => twinSend(c, true));
+  renderTwin();
+  runValidation(false);
+}
+
+// ---------- 3. twin ----------
+function twinSend(cmd, example) {
+  const real = liveDev.step(cmd);
+  let tw;
+  if (cmd === "RESET") { twinState = L.model.initial; tw = "RESET_OK"; }
+  else if (faultRate && faultRng() < faultRate) tw = "ERR_INJECTED";
+  else { const tr = L.model.trans[twinState][cmd]; tw = tr ? tr[0] : "ERR_UNKNOWN"; if (tr) twinState = tr[1]; }
+  twinLog.push({ cmd, real, tw, example: !!example });
+  if (!example) renderTwin();
+}
+function renderTwin() {
+  drawGraph(L.model, twinState);
+  const rows = twinLog.map((l, i) => {
+    const same = l.real === l.tw, inj = l.tw === "ERR_INJECTED";
+    const mark = same ? '<span style="color:var(--ok)">✓ תואם</span>' : inj ? '<span style="color:var(--warn)">תקלה מוזרקת</span>' : '<span style="color:var(--bad)">✗ שונה</span>';
+    return `<tr><td class="m small">${i + 1}</td><td class="m"><b>${esc(l.cmd)}</b></td><td class="m">${esc(l.real)}</td><td class="m">${esc(l.tw)}</td><td>${mark}</td></tr>`;
+  }).reverse().join("");
+  $("twin-log").innerHTML = `<tr><th>#</th><th>פקודה</th><th>מכשיר אמיתי</th><th>התאום</th><th>השוואה</th></tr>` + rows;
+  const m = L.model;
+  const json = { format: "blackbox-twin/mealy-v1", initial: m.initial, alphabet: A, reset: { cmd: "RESET", out: "RESET_OK" }, states: Object.keys(m.trans), hints: m.hints, transitions: m.trans };
+  $("model-json").textContent = JSON.stringify(json, null, 2).replace(/\[\n\s+("[^"]*"),\n\s+("[^"]*")\n\s+\]/g, "[$1, $2]");
+}
+
+function drawGraph(m, active) {
+  const states = Object.keys(m.trans), n = states.length, idx = Object.fromEntries(states.map((s, i) => [s, i]));
+  const gap = 200, R = 34, W = Math.max(600, gap * (n - 1) + 220), x = i => 110 + i * gap;
+  const groups = {};
+  states.forEach(s => A.forEach(a => { const [o, nx] = m.trans[s][a]; const k = s + ">" + nx; (groups[k] = groups[k] || { from: s, to: nx, labels: [] }).labels.push([a, o]); }));
+  let maxBack = 0, maxLoop = 0;
+  Object.values(groups).forEach(g => { const d = idx[g.from] - idx[g.to]; if (d > 0) maxBack = Math.max(maxBack, d); if (d === 0) maxLoop = Math.max(maxLoop, g.labels.length); });
+  const cy = 40 + R + 26 + maxLoop * 15, H = cy + R + 40 + maxBack * 50;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="g-arrow" d="M0 0 L10 5 L0 10 z"/></marker></defs>`;
+  const lbl = (labels, x0, y0, dir) => labels.map((l, i) => `<text x="${x0}" y="${y0 + dir * i * 15}">${esc(l[0])}<tspan class="o">/${esc(l[1])}</tspan></text>`).join("");
+  Object.values(groups).forEach(g => {
+    const i = idx[g.from], j = idx[g.to], d = j - i;
+    if (d === 0) {
+      const cx = x(i);
+      svg += `<g class="g-loop"><path class="g-edge-p" d="M${cx - 14} ${cy - R + 3} C ${cx - 30} ${cy - R - 34}, ${cx + 30} ${cy - R - 34}, ${cx + 14} ${cy - R + 3}" fill="none" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#ah)"/>${lbl(g.labels, cx, cy - R - 32, -1)}</g>`;
+    } else {
+      const fwd = d > 0, x1 = x(i), x2 = x(j), h = fwd ? 30 + (Math.abs(d) - 1) * 40 : 36 + (Math.abs(d) - 1) * 50;
+      const y1 = fwd ? cy - 12 : cy + 12, ym = fwd ? cy - R - h : cy + R + h;
+      const sx = x1 + (fwd ? R - 4 : -R + 4) * 0.9, ex = x2 + (fwd ? -R : R) * 0.95;
+      const mx = (x1 + x2) / 2;
+      const ly = fwd ? ym + 6 - (g.labels.length - 1) * 15 : ym + 2;
+      svg += `<g class="g-edge"><path d="M${sx} ${y1} Q ${mx} ${ym}, ${ex} ${y1}" marker-end="url(#ah)"/>${lbl(g.labels, mx, fwd ? ly : ly + 14, 1)}</g>`;
+    }
+  });
+  svg += `<path class="g-start" d="M${x(0) - R - 40} ${cy} H${x(0) - R - 4}" marker-end="url(#ah)"/><text x="${x(0) - R - 44}" y="${cy - 8}" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono, monospace">start</text>`;
+  states.forEach((s, i) => {
+    svg += `<g class="g-node ${s === active ? "active" : ""}"><circle cx="${x(i)}" cy="${cy}" r="${R}" style="stroke:${stateColor(i)}"/><text x="${x(i)}" y="${cy + 1}" font-size="17" font-weight="600">${esc(s)}</text><text x="${x(i)}" y="${cy + 17}" font-size="9.5" fill="var(--muted)" style="fill:var(--muted)">${esc(m.hints[s] || "")}</text></g>`;
+  });
+  $("graph").innerHTML = svg + "</svg>";
+}
+
+// ---------- 4. validation ----------
+let valTimer = null;
+function runValidation(animate) {
+  if (valTimer) clearTimeout(valTimer);
+  const rng = makeRng(Number($("seed").value) + 1000);
+  const tests = makeTests(rng, 300, [...L.cache.keys()]);
+  const dev = new Device(spec);
+  const truth = tests.map(w => dev.run(w));
+  const rr = recordReplay(spec, makeRng(Number($("seed").value) + 2000), L.stats.runs);
+  const res = { twin: { seq: 0, step: 0 }, rr: { seq: 0, step: 0 }, steps: 0, fails: [] };
+  const covered = new Set();
+  let i = 0;
+  const work = upto => {
+    for (; i < upto; i++) {
+      const w = tests[i], exp = truth[i], tw = runModel(L.model, w), r = rr.run(w);
+      let s = L.model.initial; w.forEach(c => { covered.add(s + c); s = L.model.trans[s][c][1]; });
+      res.steps += w.length;
+      res.twin.step += exp.filter((o, k) => o === tw[k]).length;
+      res.rr.step += exp.filter((o, k) => o === r[k]).length;
+      if (K(exp) === K(tw)) res.twin.seq++;
+      if (K(exp) === K(r)) res.rr.seq++; else if (res.fails.length < 3) res.fails.push({ w, exp, got: r });
+    }
+    paint(i);
+  };
+  const paint = done => {
+    const p = (a, b) => b ? (100 * a / b) : 0;
+    $("bar-twin").style.width = p(res.twin.seq, done) * done / tests.length + "%";
+    $("bar-rr").style.width = p(res.rr.seq, done) * done / tests.length + "%";
+    $("pct-twin").textContent = done ? p(res.twin.seq, done).toFixed(1) + "%" : "–";
+    $("pct-rr").textContent = done ? p(res.rr.seq, done).toFixed(1) + "%" : "–";
+    $("val-status").textContent = done < tests.length ? `רצף ${done} מתוך ${tests.length}…` : `${tests.length} רצפים חדשים, באורך 3 עד 15`;
+    if (done === tests.length) {
+      const total = Object.keys(L.model.trans).length * A.length;
+      $("val-detail").innerHTML = `רצפים שלמים נכונים: התאום ${res.twin.seq}/${tests.length}, Record &amp; Replay ${res.rr.seq}/${tests.length}. תשובות בודדות: התאום ${p(res.twin.step, res.steps).toFixed(1)}%, Record &amp; Replay ${p(res.rr.step, res.steps).toFixed(1)}%. Record &amp; Replay הוקלט מ-${L.stats.runs} סשנים, כמו מספר הניסויים של הלומד. הבדיקות כיסו ${covered.size} מתוך ${total} מעברים במודל.`;
+      $("fails").innerHTML = res.fails.length ? `<h3 style="margin-bottom:10px">איפה Record &amp; Replay טועה (דוגמאות)</h3>` + res.fails.map(f => `
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+          <div class="diff"><span style="border:none;background:none;color:var(--muted)">send</span>${f.w.map(c => `<span>${esc(c)}</span>`).join("")}</div>
+          <div class="diff"><span style="border:none;background:none;color:var(--muted)">device</span>${f.exp.map(o => `<span>${esc(o)}</span>`).join("")}</div>
+          <div class="diff"><span style="border:none;background:none;color:var(--muted)">R&amp;R</span>${f.got.map((o, k) => `<span class="${o === f.exp[k] ? "v" : "x"}">${esc(o)}</span>`).join("")}</div>
+        </div>`).join("") : "";
+    } else { $("val-detail").textContent = ""; $("fails").innerHTML = ""; }
+  };
+  if (!animate) { work(tests.length); return; }
+  paint(0);
+  const stepFn = () => { work(Math.min(tests.length, i + 5)); if (i < tests.length) valTimer = setTimeout(stepFn, 22); };
+  stepFn();
+}
+
+// ---------- 5. other device ----------
+function renderPresets() {
+  $("presets").innerHTML = Object.entries(PRESETS).map(([k, p]) => `<button class="preset" data-k="${k}" aria-pressed="${k === presetKey}"><b>${esc(p.label)}</b><span>${esc(p.desc)}</span></button>`).join("")
+    + `<button class="preset" disabled aria-pressed="${presetKey === "custom"}" style="cursor:default"><b>מותאם אישית</b><span>נבחר אוטומטית כשעורכים את הטבלה למטה.</span></button>`;
+  document.querySelectorAll(".preset[data-k]").forEach(b => b.addEventListener("click", () => { presetKey = b.dataset.k; spec = clone(PRESETS[presetKey]); deviceChanged(); }));
+}
+function renderEditor() {
+  const states = Object.keys(spec.table);
+  let h = `<tr><th>מצב</th>${A.map(a => `<th class="m">${a}</th>`).join("")}</tr>`;
+  h += states.map((s, si) => `<tr><td class="m"><b>${esc(s)}</b>${si === 0 ? ' <span class="small">(התחלה)</span>' : ""}</td>${A.map(a => {
+    const [o, nx] = spec.table[s][a];
+    return `<td><span class="pair"><input id="o-${si}-${a}" data-s="${esc(s)}" data-a="${a}" value="${esc(o)}" aria-label="${esc(s)} ${a} answer"> → <select id="n-${si}-${a}" data-s="${esc(s)}" data-a="${a}" aria-label="${esc(s)} ${a} next state">${states.map(x => `<option ${x === nx ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></span></td>`;
+  }).join("")}</tr>`).join("");
+  $("editor").innerHTML = h;
+  $("editor").querySelectorAll("input").forEach(inp => inp.addEventListener("change", () => {
+    const v = inp.value.trim().toUpperCase().replace(/\s+/g, "_") || "OK";
+    spec.table[inp.dataset.s][inp.dataset.a][0] = v; presetKey = "custom"; deviceChanged();
+  }));
+  $("editor").querySelectorAll("select").forEach(sel => sel.addEventListener("change", () => {
+    spec.table[sel.dataset.s][sel.dataset.a][1] = sel.value; presetKey = "custom"; deviceChanged();
+  }));
+}
+function deviceChanged() {
+  renderPresets(); renderEditor();
+  resetBench(false);
+  relearn();
+  t = 0; renderLearn(); lockLater(true);
+  $("play").textContent = "▶ צפו בלמידה מההתחלה";
+  $("learn").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
+
+// ---------- wire up ----------
+cmdButtons($("dev-buttons"), benchSend);
+cmdButtons($("twin-buttons"), c => twinSend(c));
+(() => { const b = document.createElement("button"); b.className = "btn"; b.textContent = "8 פקודות אקראיות"; const r = makeRng(5);
+  b.addEventListener("click", () => { for (let i = 0; i < 8; i++) twinSend(r.choice(A), true); renderTwin(); }); $("twin-buttons").appendChild(b); })();
+$("peek").addEventListener("change", e => { $("peek-box").hidden = !e.target.checked; });
+$("play").addEventListener("click", play);
+$("pause").addEventListener("click", stop);
+$("step").addEventListener("click", () => { stop(); if (t < L.events.length - 1) { t++; renderLearn(); lockLater(t < L.events.length - 1); if (t === L.events.length - 1) onLearned(); } });
+$("skip").addEventListener("click", () => { stop(); t = L.events.length - 1; renderLearn(); onLearned(); });
+$("seed").addEventListener("change", () => { relearn(); });
+$("validate").addEventListener("click", () => runValidation(true));
+$("fault").addEventListener("input", e => { faultRate = Number(e.target.value) / 100; $("fault-v").textContent = e.target.value + "%"; });
+
+renderPresets(); renderEditor();
+resetBench(true);
+relearn();
+</script>
+</body>
+</html>

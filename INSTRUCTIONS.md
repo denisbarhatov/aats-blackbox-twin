@@ -6,13 +6,14 @@ This guide explains how to install, run, test and extend the project. For *what*
 
 1. [What you need](#1-what-you-need)
 2. [Get the code](#2-get-the-code)
-3. [Run the full demo](#3-run-the-full-demo)
-4. [Run the automated test](#4-run-the-automated-test)
-5. [Run each part by hand](#5-run-each-part-by-hand)
-6. [Try your own hidden device](#6-try-your-own-hidden-device)
-7. [Project layout](#7-project-layout)
-8. [Troubleshooting](#8-troubleshooting)
-9. [Next step: AWS IoT Core](#9-next-step-aws-iot-core)
+3. [Try it in the browser (no terminal)](#3-try-it-in-the-browser-no-terminal)
+4. [Run the full demo (terminal)](#4-run-the-full-demo-terminal)
+5. [Run the automated test](#5-run-the-automated-test)
+6. [Run each part by hand](#6-run-each-part-by-hand)
+7. [Try your own hidden device](#7-try-your-own-hidden-device)
+8. [Project layout](#8-project-layout)
+9. [Troubleshooting](#9-troubleshooting)
+10. [Next step: AWS IoT Core](#10-next-step-aws-iot-core)
 
 ---
 
@@ -37,7 +38,23 @@ git clone https://github.com/denisbarhatov/aats-blackbox-twin.git
 cd aats-blackbox-twin/poc
 ```
 
-## 3. Run the full demo
+## 3. Try it in the browser (no terminal)
+
+Open [web/index.html](web/index.html) in any browser: download it from GitHub, or double-click it after cloning. Nothing to install.
+
+On one page you can:
+
+| Section | What you do |
+|---|---|
+| 1. The hidden device | Click `ON`, `OFF`, `STATUS`, `PING`, `RESET` and watch the LED and the answers. Tick "peek" to see the hidden state |
+| 2. Learning | Press ▶ and watch L* fill the observation table, find the states and check its hypothesis |
+| 3. The twin | See the learned state graph. Every command goes to the device and to the twin, side by side. Slide the fault injection to test failures |
+| 4. The proof | Run 300 new sequences: twin vs Record & Replay |
+| 5. Another device | Pick a different firmware or edit the hidden table, and learn it again with the same learner |
+
+The page runs the same L* algorithm as `poc/learner.py`, ported to JavaScript. The command-line POC below is the reference implementation.
+
+## 4. Run the full demo (terminal)
 
 ```bash
 python run_demo.py
@@ -90,7 +107,7 @@ record & replay :  27.3% sequences
 | `--twin-port N` | 9002 | Port of the twin |
 | `--out DIR` | `poc/out` | Where to write the results |
 
-## 4. Run the automated test
+## 5. Run the automated test
 
 From the `poc` folder:
 
@@ -100,7 +117,7 @@ python -m unittest test_poc -v
 
 It learns the hidden device, checks that 4 states were found, that the twin matches 100% of new sequences, and that Record & Replay scores lower. Expected output ends with `OK`.
 
-## 5. Run each part by hand
+## 6. Run each part by hand
 
 This shows that the parts are separate programs that only talk over the network. Open **four terminals**, all in the `poc` folder.
 
@@ -141,7 +158,7 @@ python twin.py --model out/model.json --port 9002 --fault-rate 0.2
 
 Stop any server with `Ctrl+C`.
 
-## 6. Try your own hidden device
+## 7. Try your own hidden device
 
 This is the "generality test": a different device should be learned **without changing the learner**.
 
@@ -156,13 +173,15 @@ Rules:
 - If you add a **new command**, also add it to `DEFAULT_ALPHABET` in `learner.py`. That list is the "allowed commands" the learner is told about.
 - `RESET` must always return to the start state.
 
-## 7. Project layout
+## 8. Project layout
 
 ```text
 aats-blackbox-twin/
 ├── README.md                  Project overview
 ├── INSTRUCTIONS.md            This file
 ├── BLACKBOX_TWIN_CONTEXT.md   Full project context (idea, risks, open questions)
+├── web/
+│   └── index.html             Interactive lab: the whole POC in the browser
 ├── docs/
 │   ├── BlackBox_Twin_Project_Report.docx   What we built, what works, how it works
 │   ├── SIMPLE_EXPLANATION.md                Plain-language explanation (Hebrew)
@@ -194,7 +213,7 @@ device_sim.py  ◄──TCP──  learner.py  ──►  out/model.json  ──
 
 The protocol is one line of text per command and one line per answer, for example `ON` → `OK`. Every experiment starts with `RESET`.
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 | Problem | Fix |
 |---|---|
@@ -203,7 +222,7 @@ The protocol is one line of text per command and one line per answer, for exampl
 | A previous demo is still running | Close its terminal, or end the leftover `python` processes |
 | The report shows tables but no state graph | The graph library loads from the internet. Tables work offline |
 
-## 9. Next step: AWS IoT Core
+## 10. Next step: AWS IoT Core
 
 The MVP moves the device connection to **AWS IoT Core** with **MQTT**. Only the transport changes; the learner, twin logic and validator stay the same. Full explanation: section 9 of the project report and [docs/POC_PLAN.md](docs/POC_PLAN.md).
 
