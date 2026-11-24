@@ -87,7 +87,7 @@ Python · Scapy · FastAPI · Docker · React / Next.js · SQLite → PostgreSQL
 ## מסמכים
 
 - [INSTRUCTIONS.md](INSTRUCTIONS.md) — **איך עובדים עם הפרויקט**: התקנה, הרצה, בדיקות, הרצה ידנית של כל חלק, ושלבי AWS IoT Core.
-- [docs/BlackBox_Twin_Project_Report.docx](docs/BlackBox_Twin_Project_Report.docx) — **דוח הפרויקט** (Word, באנגלית): מה עשינו, מה עובד ואיך זה עובד.
+- [docs/BlackBox_Twin_Project_Report.docx](docs/BlackBox_Twin_Project_Report.docx) — **דוח הפרויקט** (Word, בעברית): מה עשינו, מה עובד ואיך זה עובד.
 - [presentation/](presentation/README.md) — **המצגת** (PDF ו-HTML): איך זה עובד ומה ה-POC הוכיח.
 - [poc/README.md](poc/README.md) — **POC שרץ**: לומד מכשיר מדומה, בונה תאום ומשווה ל-Record & Replay. מריצים: `python poc/run_demo.py`.
 - [docs/POC_PLAN.md](docs/POC_PLAN.md) — תוכנית ה-POC: ESP32 + AWS IoT Core, מכונת המצבים, ארכיטקטורה ואבני דרך.
