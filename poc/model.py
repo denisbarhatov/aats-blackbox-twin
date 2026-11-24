@@ -1,6 +1,7 @@
 """The learned behavior model (a Mealy machine) and its JSON file format."""
 
 import json
+import os
 
 UNKNOWN_OUT = "ERR_UNKNOWN"
 
@@ -50,6 +51,9 @@ class MealyModel:
                    d["reset"]["cmd"], d["reset"]["out"], d.get("hints"))
 
     def save(self, path):
+        folder = os.path.dirname(path)
+        if folder:
+            os.makedirs(folder, exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(self.to_dict(), f, indent=2)
 
